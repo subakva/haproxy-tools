@@ -14,11 +14,11 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "haproxy-parser"
-  gem.homepage = "http://github.com/subakva/haproxy-parser"
+  gem.name = "haproxy-tools"
+  gem.homepage = "http://github.com/subakva/haproxy-tools"
   gem.license = "MIT"
-  gem.summary = %Q{Parses HAProxy Config Files}
-  gem.description = %Q{This is a parser for HAProxy config files in Ruby.}
+  gem.summary = %Q{HAProxy Tools for Ruby}
+  gem.description = %Q{Ruby tools for HAProxy, including config file management.}
   gem.email = "jdwadsworth@gmail.com"
   gem.authors = ["Jason Wadsworth"]
   # dependencies defined in Gemfile
