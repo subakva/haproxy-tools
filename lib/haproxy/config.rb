@@ -24,5 +24,11 @@ module HAProxy
     def backend(name)
       self.backends.find { |b| b.name == name }
     end
+
+    class << self
+      def parse(filename)
+        HAProxy::Parser.new.parse(filename)
+      end
+    end
   end
 end
