@@ -19,6 +19,15 @@ Tools for managing HAProxy with Ruby.
     puts "Server: #{server.name} #{server.ip}"
   end
 
+== Managing the Server List
+
+  require 'haproxy-tools'
+ 
+  config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg') # Parse the config file
+  logs = config.backend('logs')                                          # Get the backend
+  logs.servers['logs4'] = HAProxy::Server.new('logs4', '127.0.0.1')      # Add a new server
+  logs.servers.delete_if {|name, server| name == 'logs4'}                # Remove a server
+
 == Contributing to haproxy-tools
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
