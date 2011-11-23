@@ -2,6 +2,23 @@
 
 Tools for managing HAProxy with Ruby.
 
+== Installation
+
+  gem install haproxy-tools
+
+== Gemfile
+
+  gem 'haproxy-tools', '~> 0.1.0'
+
+== Basic Configuration File Parsing
+
+	require 'haproxy-tools'
+
+	config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg')
+	config.backend('logs').servers.each do |name, server|
+	  puts "Server: #{server.name} #{server.ip}"
+	end
+
 == Contributing to haproxy-tools
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
