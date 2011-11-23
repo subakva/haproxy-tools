@@ -12,12 +12,12 @@ Tools for managing HAProxy with Ruby.
 
 == Basic Configuration File Parsing
 
-	require 'haproxy-tools'
+  require 'haproxy-tools'
 
-	config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg')
-	config.backend('logs').servers.each do |name, server|
-	  puts "Server: #{server.name} #{server.ip}"
-	end
+  config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg')
+  config.backend('logs').servers.each do |name, server|
+    puts "Server: #{server.name} #{server.ip}"
+  end
 
 == Contributing to haproxy-tools
 
