@@ -1,6 +1,36 @@
 require 'spec_helper'
 
 describe "HAProxy::Config" do
+  context 'multi-pool config file parsing' do
+    before(:each) do
+      @parser = HAProxy::Config.new(:filename => 'spec/fixtures/multi-pool.haproxy.cfg')
+    end
+
+    it "parses a named backends from a config file" do
+      config = @parser.parse
+
+      config.backends.size.should == 3
+      logs_backend = config.backend('logs')
+
+      logs_backend.servers.size.should == 3
+
+      server1 = logs_backend.servers['prd_log_1']
+      server1.name.should == 'prd_log_1'
+      server1.ip.should   == '10.245.174.75'
+      server1.port.should == '8000'
+
+      server2 = logs_backend.servers['fake_logger']
+      server2.name.should == 'fake_logger'
+      server2.ip.should   == '127.0.0.1'
+      server2.port.should == '9999'
+
+      server3 = logs_backend.servers['prd_log_2']
+      server3.name.should == 'prd_log_2'
+      server3.ip.should   == '10.215.157.10'
+      server3.port.should == '8000'
+    end
+  end
+
   context 'basic config file parsing' do
     before(:each) do
       @parser = HAProxy::Config.new(:filename => 'spec/fixtures/simple.haproxy.cfg')

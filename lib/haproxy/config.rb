@@ -20,6 +20,10 @@ module HAProxy
       config_sections['defaults']
     end
 
+    def backend(name)
+      self.backends.find { |b| b.name == name }
+    end
+
     def parse
       # This is starting to suck. Try treetop.
       lines = File.readlines(self.options[:filename])
