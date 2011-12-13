@@ -1,0 +1,56 @@
+require 'haproxy/treetop/nodes'
+
+module HAProxy::Treetop
+
+  grammar Config
+
+    rule backend
+      (comment_line / blank_line / server)* <HAProxy::Treetop::BackendNode>
+    end
+
+    rule comment_line
+      "#" [^\n]* [\n] <HAProxy::Treetop::CommentNode>
+    end
+
+    rule whitespace
+      [ \t]+
+    end
+
+    rule blank_line
+      [\n] <HAProxy::Treetop::BlankLineNode>
+    end
+
+    rule server
+      'server' whitespace server_name whitespace server_address whitespace server_params [\n] <HAProxy::Treetop::ServerNode>
+    end
+
+    rule server_name
+      [a-zA-Z0-9\-\_]+
+    end
+
+    rule ipv4
+      [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3
+    end
+
+    rule server_address
+      ipv4 [:]? [\d]*
+    end
+
+    rule server_params
+      (server_source_param / server_param_with_value / server_param_without_value / whitespace)*
+    end
+
+    rule server_source_param
+      'source' whitespace server_address
+    end
+
+    rule server_param_with_value
+      ('addr' / 'cookie' / 'fall' / 'id' / 'inter' / 'fastinter' / 'downinter' / 'maxconn' / 'maxqueue' / 'minconn' / 'port' / 'redir' / 'rise' / 'slowstart' / 'track' / 'weight') whitespace [\S]+
+    end
+
+    rule server_param_without_value
+      ('backup' / 'check' / 'disable')
+    end
+  end
+end
+

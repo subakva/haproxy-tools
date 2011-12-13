@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe "HAProxy::Parser" do
+
   context 'multi-pool config file' do
     before(:each) do
       @parser = HAProxy::Parser.new
