@@ -1,4 +1,17 @@
 module HAProxy::Treetop
+  class Char < Treetop::Runtime::SyntaxNode; end
+  class CommentText < Treetop::Runtime::SyntaxNode; end
+  class LineBreak < Treetop::Runtime::SyntaxNode; end
+  class BlankLine < Treetop::Runtime::SyntaxNode; end
+  class CommentLine < Treetop::Runtime::SyntaxNode; end
+  class UnknownLine < Treetop::Runtime::SyntaxNode; end
+  class ServerLine < Treetop::Runtime::SyntaxNode; end
+  class GlobalSection < Treetop::Runtime::SyntaxNode; end
+  class DefaultsSection < Treetop::Runtime::SyntaxNode; end
+
+  class ConfigurationNode < Treetop::Runtime::SyntaxNode
+  end
+
   class BackendNode < Treetop::Runtime::SyntaxNode
     def servers
       elements.select { |e| e.class == HAProxy::Treetop::ServerNode }

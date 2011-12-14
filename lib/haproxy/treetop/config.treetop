@@ -4,53 +4,102 @@ module HAProxy::Treetop
 
   grammar Config
 
-    rule backend
-      (comment_line / blank_line / server)* <HAProxy::Treetop::BackendNode>
+    rule configuration
+      (global_section / defaults_section / server_line / comment_line / unknown_line / blank_line / char)* <HAProxy::Treetop::ConfigurationNode>
     end
 
-    rule comment_line
-      "#" [^\n]* [\n] <HAProxy::Treetop::CommentNode>
+    rule global_section
+      whitespace* "global" whitespace* line_break #(unknown_line / comment_line / blank_line)* <HAProxy::Treetop::GlobalSection>
     end
-
-    rule whitespace
-      [ \t]+
+    
+    rule defaults_section
+      whitespace* "defaults" whitespace* line_break <HAProxy::Treetop::DefaultsSection>
     end
 
     rule blank_line
-      [\n] <HAProxy::Treetop::BlankLineNode>
+      whitespace* line_break <HAProxy::Treetop::BlankLine>
     end
 
-    rule server
-      'server' whitespace server_name whitespace server_address whitespace server_params [\n] <HAProxy::Treetop::ServerNode>
+    rule comment_line
+      whitespace* comment_text line_break <HAProxy::Treetop::CommentLine>
     end
 
-    rule server_name
-      [a-zA-Z0-9\-\_]+
+    rule server_line
+      whitespace* "server" char* comment_text? line_break <HAProxy::Treetop::ServerLine>
     end
 
-    rule ipv4
-      [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3
+    rule unknown_line
+      char* comment_text? line_break <HAProxy::Treetop::UnknownLine> 
     end
 
-    rule server_address
-      ipv4 [:]? [\d]*
+    rule comment_text
+      "#" char* &(line_break) <HAProxy::Treetop::CommentText>
     end
 
-    rule server_params
-      (server_source_param / server_param_with_value / server_param_without_value / whitespace)*
+    rule line_break
+      [\n] <HAProxy::Treetop::LineBreak>
     end
 
-    rule server_source_param
-      'source' whitespace server_address
+    rule char
+      ![\n] . <HAProxy::Treetop::Char> 
     end
 
-    rule server_param_with_value
-      ('addr' / 'cookie' / 'fall' / 'id' / 'inter' / 'fastinter' / 'downinter' / 'maxconn' / 'maxqueue' / 'minconn' / 'port' / 'redir' / 'rise' / 'slowstart' / 'track' / 'weight') whitespace [\S]+
+    rule whitespace
+      [ \t]
     end
 
-    rule server_param_without_value
-      ('backup' / 'check' / 'disable')
-    end
+#    # Root Node
+#    rule configuration
+#      (blank_line / comment_line / backend)* 
+#    end
+#
+#    rule backend
+#      (comment_line / blank_line / server)* <HAProxy::Treetop::BackendNode>
+#    end
+#
+#    rule comment_line
+#      "#" [^\n]* [\n] <HAProxy::Treetop::CommentNode>
+#    end
+#
+#    rule whitespace
+#      [ \t]+
+#    end
+#
+#    rule blank_line
+#      [\n] <HAProxy::Treetop::BlankLineNode>
+#    end
+#
+#    rule server
+#      'server' whitespace server_name whitespace server_address whitespace server_params [\n] <HAProxy::Treetop::ServerNode>
+#    end
+#
+#    rule server_name
+#      [a-zA-Z0-9\-\_]+
+#    end
+#
+#    rule ipv4
+#      [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3
+#    end
+#
+#    rule server_address
+#      ipv4 [:]? [\d]*
+#    end
+#
+#    rule server_params
+#      (server_source_param / server_param_with_value / server_param_without_value / whitespace)*
+#    end
+#
+#    rule server_source_param
+#      'source' whitespace server_address
+#    end
+#
+#    rule server_param_with_value
+#      ('addr' / 'cookie' / 'fall' / 'id' / 'inter' / 'fastinter' / 'downinter' / 'maxconn' / 'maxqueue' / 'minconn' / 'port' / 'redir' / 'rise' / 'slowstart' / 'track' / 'weight') whitespace [\S]+
+#    end
+#
+#    rule server_param_without_value
+#      ('backup' / 'check' / 'disable')
+#    end
   end
 end
 
