@@ -6,31 +6,62 @@ require 'haproxy/treetop/config'
 describe 'HAProxy::Treetop::ConfigParser' do
   before(:each) do
     @parser = HAProxy::Treetop::ConfigParser.new
-    @result = @parser.parse(File.read("spec/fixtures/multi-pool.haproxy.cfg"))
+  end
+
+  def parse_file(filename)
+    @result = @parser.parse(File.read(filename))
     if @result.nil?
       puts
       puts "Failure Reason:  #{@parser.failure_reason}"
     end
 
-    HAProxy::Treetop.print_node(@result, 0, :max_depth => 3)
+    # HAProxy::Treetop.print_node(@result, 0, :max_depth => 3)
   end
 
-  it "should parse a backend server block" do
-    pending
+  def parse_single_pool
+    parse_file('spec/fixtures/simple.haproxy.cfg')
+  end
+
+  def parse_multi_pool
+    parse_file('spec/fixtures/multi-pool.haproxy.cfg')
+  end
+
+  it "can parse servers from a backend server block" do
+    parse_multi_pool
+
     backend = @result.backends.first
     backend.servers.size.should == 4
     backend.servers[0].name.should == 'prd_www_1'
-    backend.servers[0].address.should == '10.214.78.95'
+    backend.servers[0].host.should == '10.214.78.95'
+    backend.servers[0].port.should == '8000'
   end
 
-  it 'should parse a file with multiple sections' do
+  it 'can parse a file with a listen section' do
+    parse_single_pool
+
+    @result.class.should == HAProxy::Treetop::ConfigurationFile
+    @result.elements.size.should == 3
+
+    @result.global.should == @result.elements[0]
+    @result.elements[0].class.should == HAProxy::Treetop::GlobalSection
+
+    @result.defaults[0].should == @result.elements[1]
+    @result.elements[1].class.should == HAProxy::Treetop::DefaultsSection
+
+    @result.listeners[0].should == @result.elements[2]
+    @result.elements[2].class.should == HAProxy::Treetop::ListenSection
+  end
+
+  it 'can parse a file with frontend/backend sections' do
+    parse_multi_pool
+
     @result.class.should == HAProxy::Treetop::ConfigurationFile
     @result.elements.size.should == 5
 
     @result.global.should == @result.elements[0]
     @result.elements[0].class.should == HAProxy::Treetop::GlobalSection
 
-    @result.defaults.should == @result.elements[1]
+    @result.defaults[0].should == @result.elements[1]
     @result.elements[1].class.should == HAProxy::Treetop::DefaultsSection
 
     @result.frontends[0].should == @result.elements[2]
@@ -42,5 +73,11 @@ describe 'HAProxy::Treetop::ConfigParser' do
     @result.elements[4].class.should == HAProxy::Treetop::BackendSection
   end
 
+  it 'can parse userlist sections'
+  it 'can parse valid units of time'
+  it 'can parse strings with escaped spaces'
+  it 'can parse files with escaped quotes'
+  it 'can parse keywords with hyphens'
+  it 'can write a parsed file back to text'
 end
 

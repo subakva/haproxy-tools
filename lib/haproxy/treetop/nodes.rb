@@ -7,48 +7,86 @@ module HAProxy::Treetop
     end
   end
 
+  module ConfigBlockContainer
+    def config_block
+      self.elements.select {|e| e.class == ConfigBlock}
+    end
+  end
+
+  module ServerContainer
+    def servers
+       self.config_block.elements.select {|e| e.class == ServerLine}
+    end
+  end
+
   class Whitespace < Treetop::Runtime::SyntaxNode
     def content; self.text_value; end
   end
   class LineBreak < Treetop::Runtime::SyntaxNode; end
   class Char < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class Keyword < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+  class ProxyName < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+  class ServerName < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+  class Host < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+  class Port < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class Value < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class CommentText < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class BlankLine < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class ConfigLine < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class CommentLine < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
 
+  class ServiceAddress < Treetop::Runtime::SyntaxNode
+    include StrippedTextContent
+  end
+
   class ServerLine < Treetop::Runtime::SyntaxNode
     include StrippedTextContent
     def name
-      nil
+      self.server_name.content
     end
 
-    def address
-      nil
+    def host
+      self.service_address.host.text_value.strip
+    end
+
+    def port
+      self.service_address.port.text_value.strip
     end
   end
 
   class GlobalHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class DefaultsHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+  class ListenHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+  class UserlistHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class FrontendHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
   class BackendHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
 
   class ConfigBlock < Treetop::Runtime::SyntaxNode; end
 
-  class DefaultsSection < Treetop::Runtime::SyntaxNode; end
-  class GlobalSection < Treetop::Runtime::SyntaxNode; end
-  class FrontendSection < Treetop::Runtime::SyntaxNode; end
+  class DefaultsSection < Treetop::Runtime::SyntaxNode
+    include ConfigBlockContainer
+  end
+
+  class GlobalSection < Treetop::Runtime::SyntaxNode
+    include ConfigBlockContainer
+  end
+
+  class UserlistSection < Treetop::Runtime::SyntaxNode
+    include ConfigBlockContainer
+  end
+
+  class FrontendSection < Treetop::Runtime::SyntaxNode
+    include ConfigBlockContainer
+  end
+
+  class ListenSection < Treetop::Runtime::SyntaxNode
+    include ConfigBlockContainer
+    include ServerContainer
+  end
 
   class BackendSection < Treetop::Runtime::SyntaxNode
-    def servers
-       self.config_block.elements.select {|e| e.class == ServerLine}
-    end
-
-    def config_block
-      self.elements.select {|e| e.class == ConfigBlock}
-    end
+    include ConfigBlockContainer
+    include ServerContainer
   end
 
   class ConfigurationFile < Treetop::Runtime::SyntaxNode
@@ -57,9 +95,13 @@ module HAProxy::Treetop
     end
 
     def defaults
-      self.elements.select {|e| e.class == DefaultsSection}.first
+      self.elements.select {|e| e.class == DefaultsSection}
     end
        
+    def listeners
+      self.elements.select {|e| e.class == ListenSection}
+    end
+
     def frontends
       self.elements.select {|e| e.class == FrontendSection}
     end
