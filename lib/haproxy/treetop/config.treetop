@@ -3,103 +3,85 @@ require 'haproxy/treetop/nodes'
 module HAProxy::Treetop
 
   grammar Config
-
     rule configuration
-      (global_section / defaults_section / server_line / comment_line / unknown_line / blank_line / char)* <HAProxy::Treetop::ConfigurationNode>
+      (global_section / defaults_section / frontend_section / backend_section)* <ConfigurationFile>
     end
 
     rule global_section
-      whitespace* "global" whitespace* line_break #(unknown_line / comment_line / blank_line)* <HAProxy::Treetop::GlobalSection>
+      global_header config_block <GlobalSection>
     end
-    
+
     rule defaults_section
-      whitespace* "defaults" whitespace* line_break <HAProxy::Treetop::DefaultsSection>
+      defaults_header config_block <DefaultsSection>
     end
 
-    rule blank_line
-      whitespace* line_break <HAProxy::Treetop::BlankLine>
+    rule frontend_section
+      frontend_header config_block <FrontendSection>
     end
 
-    rule comment_line
-      whitespace* comment_text line_break <HAProxy::Treetop::CommentLine>
+    rule backend_section
+      backend_header config_block <BackendSection>
+    end
+
+    rule global_header
+      whitespace "global" whitespace comment_text? line_break <GlobalHeader>
+    end
+
+    rule defaults_header
+      whitespace "defaults" whitespace comment_text? line_break <DefaultsHeader>
+    end
+
+    rule frontend_header
+      whitespace "frontend" whitespace value comment_text? line_break <FrontendHeader>
+    end
+
+    rule backend_header
+      whitespace "backend" whitespace value comment_text? line_break <BackendHeader>
+    end
+
+    rule config_block
+      (server_line / config_line / comment_line / blank_line)* <ConfigBlock>
     end
 
     rule server_line
-      whitespace* "server" char* comment_text? line_break <HAProxy::Treetop::ServerLine>
+      whitespace "server" whitespace value comment_text? line_break <ServerLine>
     end
 
-    rule unknown_line
-      char* comment_text? line_break <HAProxy::Treetop::UnknownLine> 
+    rule config_line
+      whitespace !("defaults" / "global" / "frontend" / "backend") keyword whitespace value comment_text? line_break <ConfigLine>
+    end
+
+    rule comment_line
+      whitespace comment_text line_break <CommentLine>
+    end
+
+    rule blank_line
+      whitespace line_break <BlankLine>
     end
 
     rule comment_text
-      "#" char* &(line_break) <HAProxy::Treetop::CommentText>
+      '#' char* &line_break <CommentText>
     end
 
     rule line_break
-      [\n] <HAProxy::Treetop::LineBreak>
+      [\n] <LineBreak>
+    end
+
+    rule keyword
+      [a-z]+ <Keyword>
+    end
+
+    rule value
+      [^#\n]* <Value>
     end
 
     rule char
-      ![\n] . <HAProxy::Treetop::Char> 
+      ![\n] . <Char>
     end
 
     rule whitespace
-      [ \t]
+      [ \t]* <Whitespace>
     end
-
-#    # Root Node
-#    rule configuration
-#      (blank_line / comment_line / backend)* 
-#    end
-#
-#    rule backend
-#      (comment_line / blank_line / server)* <HAProxy::Treetop::BackendNode>
-#    end
-#
-#    rule comment_line
-#      "#" [^\n]* [\n] <HAProxy::Treetop::CommentNode>
-#    end
-#
-#    rule whitespace
-#      [ \t]+
-#    end
-#
-#    rule blank_line
-#      [\n] <HAProxy::Treetop::BlankLineNode>
-#    end
-#
-#    rule server
-#      'server' whitespace server_name whitespace server_address whitespace server_params [\n] <HAProxy::Treetop::ServerNode>
-#    end
-#
-#    rule server_name
-#      [a-zA-Z0-9\-\_]+
-#    end
-#
-#    rule ipv4
-#      [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3
-#    end
-#
-#    rule server_address
-#      ipv4 [:]? [\d]*
-#    end
-#
-#    rule server_params
-#      (server_source_param / server_param_with_value / server_param_without_value / whitespace)*
-#    end
-#
-#    rule server_source_param
-#      'source' whitespace server_address
-#    end
-#
-#    rule server_param_with_value
-#      ('addr' / 'cookie' / 'fall' / 'id' / 'inter' / 'fastinter' / 'downinter' / 'maxconn' / 'maxqueue' / 'minconn' / 'port' / 'redir' / 'rise' / 'slowstart' / 'track' / 'weight') whitespace [\S]+
-#    end
-#
-#    rule server_param_without_value
-#      ('backup' / 'check' / 'disable')
-#    end
   end
 end
 
