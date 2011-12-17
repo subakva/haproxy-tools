@@ -7,3 +7,6 @@ pkg
 *.tmproj
 tmtags
 Gemfile.lock
+*.swp
+*~
+
