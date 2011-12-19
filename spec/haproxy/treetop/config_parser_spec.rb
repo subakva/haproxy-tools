@@ -1,9 +1,6 @@
 require 'spec_helper'
-require 'polyglot'
-require 'treetop'
-require 'haproxy/treetop/config'
 
-describe 'HAProxy::Treetop::ConfigParser' do
+describe HAProxy::Treetop::ConfigParser do
   before(:each) do
     @parser = HAProxy::Treetop::ConfigParser.new
   end
@@ -15,7 +12,7 @@ describe 'HAProxy::Treetop::ConfigParser' do
       puts "Failure Reason:  #{@parser.failure_reason}"
     end
 
-    # HAProxy::Treetop.print_node(@result, 0, :max_depth => 3)
+    #HAProxy::Treetop.print_node(@result, 0, :max_depth => 3)
   end
 
   def parse_single_pool
@@ -34,6 +31,22 @@ describe 'HAProxy::Treetop::ConfigParser' do
     backend.servers[0].name.should == 'prd_www_1'
     backend.servers[0].host.should == '10.214.78.95'
     backend.servers[0].port.should == '8000'
+  end
+
+  it 'can parse a service address from a frontend header' do
+    parse_multi_pool
+
+    frontend = @result.frontends.first
+    frontend.frontend_header.service_address.host.content.should == '*'
+    frontend.frontend_header.service_address.port.content.should == '85'
+  end
+
+  it 'can parse a service address from a listen header' do
+    parse_single_pool
+
+    listener = @result.listeners.first
+    listener.listen_header.service_address.host.content.should == '55.55.55.55'
+    listener.listen_header.service_address.port.content.should == '80'
   end
 
   it 'can parse a file with a listen section' do
@@ -78,6 +91,5 @@ describe 'HAProxy::Treetop::ConfigParser' do
   it 'can parse strings with escaped spaces'
   it 'can parse files with escaped quotes'
   it 'can parse keywords with hyphens'
-  it 'can write a parsed file back to text'
 end
 

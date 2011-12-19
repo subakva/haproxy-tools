@@ -1,129 +1,174 @@
-module HAProxy::Treetop
-  extend self
+module HAProxy
+  module Treetop
+    extend self
 
-  module StrippedTextContent
-    def content
-      self.text_value.strip
-    end
-  end
-
-  module ConfigBlockContainer
-    def config_block
-      self.elements.select {|e| e.class == ConfigBlock}
-    end
-  end
-
-  module ServerContainer
-    def servers
-       self.config_block.elements.select {|e| e.class == ServerLine}
-    end
-  end
-
-  class Whitespace < Treetop::Runtime::SyntaxNode
-    def content; self.text_value; end
-  end
-  class LineBreak < Treetop::Runtime::SyntaxNode; end
-  class Char < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class Keyword < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class ProxyName < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class ServerName < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class Host < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class Port < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class Value < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class CommentText < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class BlankLine < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class ConfigLine < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class CommentLine < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-
-  class ServiceAddress < Treetop::Runtime::SyntaxNode
-    include StrippedTextContent
-  end
-
-  class ServerLine < Treetop::Runtime::SyntaxNode
-    include StrippedTextContent
-    def name
-      self.server_name.content
+    module StrippedTextContent
+      def content
+        self.text_value.strip
+      end
     end
 
-    def host
-      self.service_address.host.text_value.strip
+    module ConfigBlockContainer
+      def option_lines
+        self.config_block.elements.select {|e| e.class == OptionLine}
+      end
+
+      def config_lines
+        self.config_block.elements.select {|e| e.class == ConfigLine}
+      end
     end
 
-    def port
-      self.service_address.port.text_value.strip
-    end
-  end
+    module ServiceAddressContainer
+      def service_address
+        self.elements.find {|e| e.class == ServiceAddress }
+      end
 
-  class GlobalHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class DefaultsHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class ListenHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class UserlistHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class FrontendHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-  class BackendHeader < Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+      def host
+        self.service_address.host.text_value.strip
+      end
 
-  class ConfigBlock < Treetop::Runtime::SyntaxNode; end
-
-  class DefaultsSection < Treetop::Runtime::SyntaxNode
-    include ConfigBlockContainer
-  end
-
-  class GlobalSection < Treetop::Runtime::SyntaxNode
-    include ConfigBlockContainer
-  end
-
-  class UserlistSection < Treetop::Runtime::SyntaxNode
-    include ConfigBlockContainer
-  end
-
-  class FrontendSection < Treetop::Runtime::SyntaxNode
-    include ConfigBlockContainer
-  end
-
-  class ListenSection < Treetop::Runtime::SyntaxNode
-    include ConfigBlockContainer
-    include ServerContainer
-  end
-
-  class BackendSection < Treetop::Runtime::SyntaxNode
-    include ConfigBlockContainer
-    include ServerContainer
-  end
-
-  class ConfigurationFile < Treetop::Runtime::SyntaxNode
-    def global
-      self.elements.select {|e| e.class == GlobalSection}.first
+      def port
+        self.service_address.port.text_value.strip
+      end
     end
 
-    def defaults
-      self.elements.select {|e| e.class == DefaultsSection}
-    end
-       
-    def listeners
-      self.elements.select {|e| e.class == ListenSection}
+    module ServerContainer
+      def servers
+         self.config_block.elements.select {|e| e.class == ServerLine}
+      end
     end
 
-    def frontends
-      self.elements.select {|e| e.class == FrontendSection}
+    module OptionalValueElement
+      def value
+        self.elements.find {|e| e.class == Value}
+      end
     end
 
-    def backends
-      self.elements.select {|e| e.class == BackendSection}
+    class Whitespace < ::Treetop::Runtime::SyntaxNode
+      def content
+        self.text_value
+      end
     end
-  end
+    class LineBreak < ::Treetop::Runtime::SyntaxNode; end
+    class Char < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class Keyword < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class ProxyName < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class ServerName < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class Host < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class Port < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class Value < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class CommentText < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
 
-  def print_node(e, depth, options = nil)
-    options ||= {}
-    options = {:max_depth => 2}.merge(options)
+    class ServiceAddress < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
 
-    puts if depth == 0
-    print "--" * depth
-    print " #{e.class.name.split('::').last}"
-    print " [#{e.text_value}]" if e.class == Treetop::Runtime::SyntaxNode
-    print " [#{e.content}]" if e.respond_to? :content
-    puts
-    e.elements.each do |child|
-      print_node(child, depth + 1, options)
-    end if depth < options[:max_depth] && e.elements && !e.respond_to?(:content)
+    class CommentLine < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class BlankLine < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class ConfigLine < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+      include OptionalValueElement
+    end
+
+    class OptionLine < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+      include OptionalValueElement
+    end
+
+    class ServerLine < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+      include ServiceAddressContainer
+      include OptionalValueElement
+
+      def name
+        self.server_name.content
+      end
+    end
+
+    class GlobalHeader < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+
+    class DefaultsHeader < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+      def proxy_name
+        self.elements.select {|e| e.class == ProxyName}.first
+      end
+    end
+
+    class UserlistHeader < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class BackendHeader < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+
+    class FrontendHeader < ::Treetop::Runtime::SyntaxNode
+      include ServiceAddressContainer
+    end
+
+    class ListenHeader < ::Treetop::Runtime::SyntaxNode
+      include ServiceAddressContainer
+    end
+
+    class ConfigBlock < ::Treetop::Runtime::SyntaxNode; end
+
+    class DefaultsSection < ::Treetop::Runtime::SyntaxNode
+      include ConfigBlockContainer
+    end
+
+    class GlobalSection < ::Treetop::Runtime::SyntaxNode
+      include ConfigBlockContainer
+    end
+
+    class UserlistSection < ::Treetop::Runtime::SyntaxNode
+      include ConfigBlockContainer
+    end
+
+    class FrontendSection < ::Treetop::Runtime::SyntaxNode
+      include ConfigBlockContainer
+    end
+
+    class ListenSection < ::Treetop::Runtime::SyntaxNode
+      include ConfigBlockContainer
+      include ServerContainer
+    end
+
+    class BackendSection < ::Treetop::Runtime::SyntaxNode
+      include ConfigBlockContainer
+      include ServerContainer
+    end
+
+    class ConfigurationFile < ::Treetop::Runtime::SyntaxNode
+      def global
+        self.elements.select {|e| e.class == GlobalSection}.first
+      end
+
+      def defaults
+        self.elements.select {|e| e.class == DefaultsSection}
+      end
+         
+      def listeners
+        self.elements.select {|e| e.class == ListenSection}
+      end
+
+      def frontends
+        self.elements.select {|e| e.class == FrontendSection}
+      end
+
+      def backends
+        self.elements.select {|e| e.class == BackendSection}
+      end
+    end
+
+    def print_node(e, depth, options = nil)
+      options ||= {}
+      options = {:max_depth => 2}.merge(options)
+
+      puts if depth == 0
+      print "--" * depth
+      print " #{e.class.name.split('::').last}"
+      print " [#{e.text_value}]" if e.class == ::Treetop::Runtime::SyntaxNode
+      print " [#{e.content}]" if e.respond_to? :content
+      puts
+      e.elements.each do |child|
+        print_node(child, depth + 1, options)
+      end if depth < options[:max_depth] && e.elements && !e.respond_to?(:content)
+    end
   end
 end
 
