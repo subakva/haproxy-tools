@@ -42,7 +42,7 @@ module HAProxy
     protected
 
     def context_changed?
-      @context.class.name != @prev_context.class.name
+      @context != @prev_context
     end
 
     def handle_server_line
