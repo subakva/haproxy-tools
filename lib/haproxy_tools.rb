@@ -1,5 +1,6 @@
 require 'polyglot'
 require 'treetop'
+require 'orderedhash'
 require 'haproxy/treetop/config'
 require 'haproxy/config'
 require 'haproxy/renderer'

@@ -25,12 +25,16 @@ module HAProxy
         handle_context_change if context_changed?
 
         if e.class == HAProxy::Treetop::ServerLine
+          # Keep track of the servers that we've seen, so that we can detect and render new ones.
           @server_list[e.name] = e
-          server = @context.servers[e.name]
+          # Don't render the server element if it's been deleted from the config.
           next if @context.servers[e.name].nil?
         end
 
-        if e.elements && e.elements.size > 0
+        if e.class == HAProxy::Treetop::ServerLine
+          # Use a custom rendering method for servers, since we allow them to be added/removed/changed.
+          render_server_element(e)
+        elsif e.elements && e.elements.size > 0
           render_node(e)
         else
           @config_text << e.text_value
@@ -45,19 +49,40 @@ module HAProxy
       @context != @prev_context
     end
 
-    def handle_server_line
+    def render_server_element(e)
+      server = @context.servers[e.name]
+      render_server(server)
+    end
+
+    def render_server(server)
+      attribute_string = render_server_attributes(server.attributes)
+      @config_text << "\tserver #{server.name} #{server.host}:#{server.port} #{attribute_string}\n"
     end
 
     def handle_context_change
       if [HAProxy::Listener, HAProxy::Backend].include?(@prev_context.class)
+        # Render any servers that were added
         new_servers = @prev_context.servers.keys - @server_list.keys
 
         new_servers.each do |server_name|
-          s = @prev_context.servers[server_name]
-          @config_text << "\tserver #{s.name} #{s.host}:#{s.port} #{s.attributes}\n"
+          server = @prev_context.servers[server_name]
+          render_server(server)
         end
       end
       @server_list = {}
+    end
+
+    def render_server_attributes(attributes)
+      attribute_string = ""
+      attributes.each do |name, value|
+        attribute_string << name
+        attribute_string << " "
+        if value && value != true
+          attribute_string << value
+          attribute_string << " "
+        end
+      end
+      attribute_string
     end
 
     def update_render_context(e)

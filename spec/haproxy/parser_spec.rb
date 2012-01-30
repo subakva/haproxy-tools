@@ -8,7 +8,7 @@ describe "HAProxy::Parser" do
       @config = @parser.parse_file('spec/fixtures/multi-pool.haproxy.cfg')
     end
 
-    it "parses a named backends from a config file" do
+    it "parses a named backend from a config file" do
       @config.backends.size.should == 2
       logs_backend = @config.backend('logs')
 
@@ -76,16 +76,25 @@ describe "HAProxy::Parser" do
       server1.name.should == 'web1'
       server1.host.should   == '66.66.66.66'
       server1.port.should == '80'
+      server1.attributes['weight'].should == '1'
+      server1.attributes['maxconn'].should == '512'
+      server1.attributes['check'].should == true
 
       server2 = listener.servers['web2']
       server2.name.should == 'web2'
       server2.host.should   == '77.77.77.77'
       server2.port.should == '80'
+      server2.attributes['weight'].should == '1'
+      server2.attributes['maxconn'].should == '512'
+      server2.attributes['check'].should == true
 
       server3 = listener.servers['web3']
       server3.name.should == 'web3'
       server3.host.should   == '88.88.88.88'
       server3.port.should == '80'
+      server3.attributes['weight'].should == '1'
+      server3.attributes['maxconn'].should == '512'
+      server3.attributes['check'].should == true
     end
   end
 end

@@ -12,7 +12,7 @@ describe HAProxy::Treetop::ConfigParser do
       puts "Failure Reason:  #{@parser.failure_reason}"
     end
 
-    #HAProxy::Treetop.print_node(@result, 0, :max_depth => 3)
+    # HAProxy::Treetop.print_node(@result, 0, :max_depth => 3)
   end
 
   def parse_single_pool

@@ -38,7 +38,7 @@ module HAProxy::Treetop
     rule userlist_header
       whitespace "userlist" whitespace proxy_name comment_text? line_break <UseristHeader>
     end
-  
+
     rule defaults_header
       whitespace "defaults" whitespace proxy_name? whitespace comment_text? line_break <DefaultsHeader>
     end

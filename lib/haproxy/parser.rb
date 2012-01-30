@@ -2,6 +2,14 @@ module HAProxy
 	class Parser
     class Error < Exception; end
 
+    # haproxy 1.3
+    SERVER_ATTRIBUTE_NAMES = %w{
+      addr backup check cookie disabled fall id inter fastinter downinter
+      maxconn maxqueue minconn port redir rise slowstart source track weight
+    }
+    # Added in haproxy 1.4
+    SERVER_ATTRIBUTE_NAMES += %w{error-limit observe on-error}
+
     attr_accessor :verbose, :options, :parse_result
 
     def initialize(options = nil)
@@ -67,7 +75,6 @@ module HAProxy
       config
     end
 
-
     protected
 
     def try(node, *method_names)
@@ -82,8 +89,45 @@ module HAProxy
 
     def server_hash_from_config_section(cs)
       cs.servers.inject({}) do |ch, s|
-        ch[s.name] = Server.new(s.name, s.host, s.port, try(s, :value, :content))
+        value = try(s, :value, :content)
+        ch[s.name] = Server.new(s.name, s.host, s.port, parse_server_attributes(value))
         ch
+      end
+    end
+
+    # Parses server attributes from the server value. I couldn't get manage to get treetop to do this.
+    # 
+    # Types of server attributes to support:
+    # ipv4, boolean, string, integer, time (us, ms, s, m, h, d), url, source attributes
+    # 
+    # BUG: If an attribute value matches an attribute name, the parser will assume that a new attribute value
+    # has started. I don't know how haproxy itself handles that situation.
+    def parse_server_attributes(value)
+      parts = value.split(/\s/)
+      current_name = nil
+      pairs = parts.inject(OrderedHash.new) do |pairs, part|
+        if SERVER_ATTRIBUTE_NAMES.include?(part)
+          current_name  = part
+          pairs[current_name] = []
+        elsif current_name.nil?
+          raise "Invalid server attribute: #{part}"
+        else
+          pairs[current_name] << part
+        end
+        pairs
+      end
+
+      return clean_parsed_server_attributes(pairs)
+    end
+
+    # Converts attributes with no values to true, and combines everything else into space-separated strings.
+    def clean_parsed_server_attributes(pairs)
+      pairs.each do |k,v|
+        if v.empty?
+          pairs[k] = true
+        else
+          pairs[k] = v.join(' ')
+        end
       end
     end
 
