@@ -17,13 +17,13 @@
 * Handle versions 1.3 and 1.4 of HAProxy
 * Handle escaped values as defined by the haproxy config spec
 * Handle multiple service addresses for a listener
-* Fine-grained parsing of server/option/config attributes
 * Correlate "defaults" sections with their corresponding proxy sections
+* Fine-grained parsing of server/option/config attributes (Done manually for servers.)
 
-* Ability to add/remove "disabled" attribute on servers
 * Ability to override arbitrary attributes, options, configs
 
 * MCollective integration
 * Capistrano integration
 * CLI (Thor?)
 
+DONE Ability to add/remove "disabled" attribute on servers
