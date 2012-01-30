@@ -9,4 +9,6 @@ tmtags
 Gemfile.lock
 *.swp
 *~
+tmp
+*.orig
 
