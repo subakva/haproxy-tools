@@ -53,16 +53,16 @@ describe HAProxy::Treetop::ConfigParser do
     parse_single_pool
 
     @result.class.should == HAProxy::Treetop::ConfigurationFile
-    @result.elements.size.should == 3
+    @result.elements.size.should == 4
 
-    @result.global.should == @result.elements[0]
-    @result.elements[0].class.should == HAProxy::Treetop::GlobalSection
+    @result.global.should == @result.elements[1]
+    @result.elements[1].class.should == HAProxy::Treetop::GlobalSection
 
-    @result.defaults[0].should == @result.elements[1]
-    @result.elements[1].class.should == HAProxy::Treetop::DefaultsSection
+    @result.defaults[0].should == @result.elements[2]
+    @result.elements[2].class.should == HAProxy::Treetop::DefaultsSection
 
-    @result.listeners[0].should == @result.elements[2]
-    @result.elements[2].class.should == HAProxy::Treetop::ListenSection
+    @result.listeners[0].should == @result.elements[3]
+    @result.elements[3].class.should == HAProxy::Treetop::ListenSection
   end
 
   it 'can parse a file with frontend/backend sections' do
