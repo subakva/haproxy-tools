@@ -14,7 +14,7 @@ Tools for managing HAProxy with Ruby.
 
   require 'haproxy-tools'
 
-  config = HAProxy::Config.parse_file('spec/fixtures/multi-pool.haproxy.cfg')
+  config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg')
   config.backend('logs').servers.each do |name, server|
     puts "Server: #{server.name} #{server.ip}"
   end
@@ -23,7 +23,7 @@ Tools for managing HAProxy with Ruby.
 
   require 'haproxy-tools'
  
-  config = HAProxy::Config.parse_file('spec/fixtures/multi-pool.haproxy.cfg') # Parse the config file
+  config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg') # Parse the config file
   logs = config.backend('logs')                                          # Get the backend
   logs.servers['logs4'] = HAProxy::Server.new('logs4', '127.0.0.1')      # Add a new server
   logs.servers.delete_if {|name, server| name == 'logs4'}                # Remove a server
