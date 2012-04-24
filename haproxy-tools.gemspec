@@ -5,16 +5,17 @@
 
 Gem::Specification.new do |s|
   s.name = %q{haproxy-tools}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jason Wadsworth"]
-  s.date = %q{2011-11-23}
+  s.date = %q{2012-04-24}
   s.description = %q{Ruby tools for HAProxy, including config file management.}
   s.email = %q{jdwadsworth@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
-    "README.rdoc"
+    "README.rdoc",
+    "TODO"
   ]
   s.files = [
     ".document",
@@ -23,15 +24,23 @@ Gem::Specification.new do |s|
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
+    "TODO",
     "VERSION",
+    "docs/haproxy-1.3-configuration.txt",
+    "docs/haproxy-1.4-configuration.txt",
+    "haproxy-tools.gemspec",
     "lib/haproxy-tools.rb",
     "lib/haproxy/config.rb",
     "lib/haproxy/parser.rb",
+    "lib/haproxy/renderer.rb",
+    "lib/haproxy/treetop/config.treetop",
+    "lib/haproxy/treetop/nodes.rb",
     "lib/haproxy_tools.rb",
     "spec/fixtures/multi-pool.haproxy.cfg",
     "spec/fixtures/simple.haproxy.cfg",
     "spec/haproxy/config_spec.rb",
     "spec/haproxy/parser_spec.rb",
+    "spec/haproxy/treetop/config_parser_spec.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/subakva/haproxy-tools}
@@ -44,24 +53,30 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<net-scp>, [">= 0"])
+      s.add_runtime_dependency(%q<orderedhash>, [">= 0"])
       s.add_development_dependency(%q<rspec>, ["~> 2.7.0"])
       s.add_development_dependency(%q<yard>, ["~> 0.7.0"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_development_dependency(%q<treetop>, [">= 0"])
     else
+      s.add_dependency(%q<net-scp>, [">= 0"])
+      s.add_dependency(%q<orderedhash>, [">= 0"])
       s.add_dependency(%q<rspec>, ["~> 2.7.0"])
       s.add_dependency(%q<yard>, ["~> 0.7.0"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<treetop>, [">= 0"])
     end
   else
+    s.add_dependency(%q<net-scp>, [">= 0"])
+    s.add_dependency(%q<orderedhash>, [">= 0"])
     s.add_dependency(%q<rspec>, ["~> 2.7.0"])
     s.add_dependency(%q<yard>, ["~> 0.7.0"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
     s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<treetop>, [">= 0"])
   end
 end
 

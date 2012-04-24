@@ -8,25 +8,40 @@ Tools for managing HAProxy with Ruby.
 
 == Gemfile
 
-  gem 'haproxy-tools', '~> 0.1.0'
+  gem 'haproxy-tools', '~> 0.2.0'
 
 == Basic Configuration File Parsing
 
   require 'haproxy-tools'
 
-  config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg')
+  config = HAProxy::Config.parse_file('spec/fixtures/multi-pool.haproxy.cfg')
   config.backend('logs').servers.each do |name, server|
-    puts "Server: #{server.name} #{server.ip}"
+    puts "Server: #{server.name} #{server.host}"
   end
 
 == Managing the Server List
 
   require 'haproxy-tools'
- 
-  config = HAProxy::Config.parse('spec/fixtures/multi-pool.haproxy.cfg') # Parse the config file
-  logs = config.backend('logs')                                          # Get the backend
-  logs.servers['logs4'] = HAProxy::Server.new('logs4', '127.0.0.1')      # Add a new server
-  logs.servers.delete_if {|name, server| name == 'logs4'}                # Remove a server
+
+  config = HAProxy::Config.parse_file('spec/fixtures/multi-pool.haproxy.cfg') # Parse the config file
+  logs = config.backend('logs')                                               # Get the backend
+  logs.servers['logs4'] = HAProxy::Server.new('logs4', '127.0.0.1')           # Add a new server
+  logs.servers.delete_if {|name, server| name == 'logs4'}                     # Remove a server
+
+== Rendering the Configuration File
+
+  require 'haproxy-tools'
+
+  config = HAProxy::Config.parse_file('spec/fixtures/multi-pool.haproxy.cfg') # Parse the config file
+  backend = config.backend('www_main')                                        # Get the www_main backend
+  backend.servers.delete('prd_www_1')                                         # Delete one of the servers
+
+  new_config_text = config.render                                             # Render the new config
+  File.open('new-haproxy.cfg', 'w') { |f| f.puts new_config_text }            # Write the config to a file
+
+  new_config = HAProxy::Config.parse_file('new-haproxy.cfg')                  # Parse the new config file
+  new_config.backend('www_main').servers['prd_www_1']                         # Confirm that the server is removed
+  # => nil
 
 == Contributing to haproxy-tools
 
@@ -40,6 +55,6 @@ Tools for managing HAProxy with Ruby.
 
 == Copyright
 
-Copyright (c) 2011 Jason Wadsworth. See LICENSE.txt for
+Copyright (c) 2012 Jason Wadsworth. See LICENSE.txt for
 further details.
 
