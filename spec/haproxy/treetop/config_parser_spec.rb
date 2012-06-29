@@ -56,6 +56,9 @@ describe HAProxy::Treetop::ConfigParser do
     @result.class.should == HAProxy::Treetop::ConfigurationFile
     @result.elements.size.should == 5
 
+    @result.elements[0].class.should == HAProxy::Treetop::CommentLine
+    @result.elements[1].class.should == HAProxy::Treetop::BlankLine
+
     @result.global.should == @result.elements[2]
     @result.elements[2].class.should == HAProxy::Treetop::GlobalSection
 
