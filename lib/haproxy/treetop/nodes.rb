@@ -2,12 +2,14 @@ module HAProxy
   module Treetop
     extend self
 
+    # Include this module to always strip whitespace from the text_value
     module StrippedTextContent
       def content
         self.text_value.strip
       end
     end
 
+    # Include this module if the node contains a config element.
     module ConfigBlockContainer
       def option_lines
         self.config_block.elements.select {|e| e.class == OptionLine}
@@ -18,6 +20,7 @@ module HAProxy
       end
     end
 
+    # Include this module if the node contains a service address element.
     module ServiceAddressContainer
       def service_address
         self.elements.find {|e| e.class == ServiceAddress }
@@ -32,12 +35,14 @@ module HAProxy
       end
     end
 
+    # Include this module if the node contains a server elements.
     module ServerContainer
       def servers
-         self.config_block.elements.select {|e| e.class == ServerLine}
+        self.config_block.elements.select {|e| e.class == ServerLine}
       end
     end
 
+    # Include this module if the value is optional for the node.
     module OptionalValueElement
       def value
         self.elements.find {|e| e.class == Value}
@@ -49,22 +54,54 @@ module HAProxy
         self.text_value
       end
     end
-    class LineBreak < ::Treetop::Runtime::SyntaxNode; end
-    class Char < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class Keyword < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class ProxyName < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class ServerName < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class Host < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class Port < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class Value < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class CommentText < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+
+    class LineBreak < ::Treetop::Runtime::SyntaxNode
+    end
+
+    class Char < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class Keyword < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class ProxyName < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class ServerName < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class Host < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class Port < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class Value < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class CommentText < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
 
     class ServiceAddress < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
     end
 
-    class CommentLine < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class BlankLine < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class CommentLine < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class BlankLine < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
     class ConfigLine < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       include OptionalValueElement
@@ -85,7 +122,9 @@ module HAProxy
       end
     end
 
-    class GlobalHeader < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class GlobalHeader < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
 
     class DefaultsHeader < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
@@ -94,8 +133,13 @@ module HAProxy
       end
     end
 
-    class UserlistHeader < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
-    class BackendHeader < ::Treetop::Runtime::SyntaxNode; include StrippedTextContent; end
+    class UserlistHeader < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
+
+    class BackendHeader < ::Treetop::Runtime::SyntaxNode
+      include StrippedTextContent
+    end
 
     class FrontendHeader < ::Treetop::Runtime::SyntaxNode
       include ServiceAddressContainer
@@ -105,7 +149,8 @@ module HAProxy
       include ServiceAddressContainer
     end
 
-    class ConfigBlock < ::Treetop::Runtime::SyntaxNode; end
+    class ConfigBlock < ::Treetop::Runtime::SyntaxNode
+    end
 
     class DefaultsSection < ::Treetop::Runtime::SyntaxNode
       include ConfigBlockContainer
@@ -141,7 +186,7 @@ module HAProxy
       def defaults
         self.elements.select {|e| e.class == DefaultsSection}
       end
-         
+
       def listeners
         self.elements.select {|e| e.class == ListenSection}
       end
@@ -171,4 +216,3 @@ module HAProxy
     end
   end
 end
-

@@ -1,4 +1,5 @@
 module HAProxy
+  # Responsible for rendering an HAProxy::Config instance to a string.
   class Renderer
 
     attr_accessor :config, :source_tree
@@ -32,7 +33,8 @@ module HAProxy
         end
 
         if e.class == HAProxy::Treetop::ServerLine
-          # Use a custom rendering method for servers, since we allow them to be added/removed/changed.
+          # Use a custom rendering method for servers, since we allow them to be
+          # added/removed/changed.
           render_server_element(e)
         elsif e.elements && e.elements.size > 0
           render_node(e)
