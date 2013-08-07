@@ -1,12 +1,4 @@
-source "http://rubygems.org"
+source 'https://rubygems.org'
 
-gem 'net-scp'
-gem 'orderedhash'
-
-group :development do
-  gem "rspec", "~> 2.7.0"
-  gem "yard", "~> 0.7.0"
-  gem "jeweler", "~> 1.6.4"
-  gem "rcov", ">= 0"
-  gem "treetop"
-end
+# Gem dependencies are defined in haproxy-tools.gemspec
+gemspec
