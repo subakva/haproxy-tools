@@ -23,4 +23,3 @@ rescue LoadError
 end
 
 task :default => [:spec, :cane]
-task :default => [:spec]
