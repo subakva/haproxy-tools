@@ -1,5 +1,3 @@
-require 'haproxy/config'
-
 module HAProxy
   # Responsible for reading an HAProxy config file and building an HAProxy::Config instance.
   class Parser
@@ -7,12 +5,13 @@ module HAProxy
     Error = Class.new(StandardError)
 
     # haproxy 1.3
-    SERVER_ATTRIBUTE_NAMES = %w{
+    SERVER_ATTRIBUTE_NAMES_1_3 = %w{
       addr backup check cookie disabled fall id inter fastinter downinter
       maxconn maxqueue minconn port redir rise slowstart source track weight
     }
     # Added in haproxy 1.4
-    SERVER_ATTRIBUTE_NAMES += %w{error-limit observe on-error}
+    SERVER_ATTRIBUTE_NAMES_1_4 = %w{error-limit observe on-error}
+    SERVER_ATTRIBUTE_NAMES = SERVER_ATTRIBUTE_NAMES_1_3 + SERVER_ATTRIBUTE_NAMES_1_4
 
     attr_accessor :verbose, :options, :parse_result
 
