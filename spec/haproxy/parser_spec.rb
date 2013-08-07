@@ -57,7 +57,7 @@ describe "HAProxy::Parser" do
       defaults.options.should include('httpclose')
     end
 
-    it 'parses a listener from a config file' do 
+    it 'parses a listener from a config file' do
       @config.listeners.size.should == 1
 
       listener = @config.listener('http_proxy')
@@ -92,9 +92,7 @@ describe "HAProxy::Parser" do
       server3.name.should == 'web3'
       server3.host.should   == '88.88.88.88'
       server3.port.should == '80'
-      server3.attributes['weight'].should == '1'
-      server3.attributes['maxconn'].should == '512'
-      server3.attributes['check'].should == true
+      server3.attributes.should be_empty
     end
   end
 end

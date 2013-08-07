@@ -127,7 +127,7 @@ module HAProxy
       end
     end
 
-    # Parses server attributes from the server value. I couldn't get manage to get treetop to do
+    # Parses server attributes from the server value. I couldn't manage to get treetop to do
     # this.
     #
     # Types of server attributes to support:
@@ -136,7 +136,7 @@ module HAProxy
     # BUG: If an attribute value matches an attribute name, the parser will assume that a new
     # attribute value has started. I don't know how haproxy itself handles that situation.
     def parse_server_attributes(value)
-      parts = value.split(/\s/)
+      parts = value.to_s.split(/\s/)
       current_name = nil
       pairs = parts.inject({}) do |pairs, part|
         if SERVER_ATTRIBUTE_NAMES.include?(part)
