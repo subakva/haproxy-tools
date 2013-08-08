@@ -116,7 +116,7 @@ module HAProxy::Treetop
     end
 
     rule dns_host
-      [a-zA-Z\-\.] 4..255 <Host>
+      [a-zA-Z\-\.\d] 4..255 <Host>
     end
 
     rule proxy_name
