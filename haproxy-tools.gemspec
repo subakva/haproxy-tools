@@ -11,6 +11,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{Ruby tools for HAProxy, including config file management.}
   gem.summary       = %q{HAProxy Tools for Ruby}
   gem.homepage      = 'https://github.com/subakva/haproxy-tools'
+  gem.license = 'MIT'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
