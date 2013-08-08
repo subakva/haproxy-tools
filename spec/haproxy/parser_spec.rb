@@ -79,7 +79,7 @@ describe "HAProxy::Parser" do
 
       server1 = listener.servers['web1']
       server1.name.should == 'web1'
-      server1.host.should   == '66.66.66.66'
+      server1.host.should   == 'dnshost66'
       server1.port.should == '80'
       server1.attributes['weight'].should == '1'
       server1.attributes['maxconn'].should == '512'
