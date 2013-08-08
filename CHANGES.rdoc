@@ -1,20 +1,24 @@
+== 0.3.1
+
+* Fixed: Allow named hosts with numbers (@johnbellone)
+
 == 0.3.0
 
-* Fixed: Handle server configurations that do not have any extra attributes (subakva)
-* Fixed: Allow early blanks (jessekempf)
-* Dev: Added cane and simplecov
-* Dev: switched from jeweler to bundler gem management
+* Fixed: Handle server configurations that do not have any extra attributes (@subakva)
+* Fixed: Allow early blanks (@jessekempf)
+* Dev: Added cane and simplecov (@subakva)
+* Dev: switched from jeweler to bundler gem management (@subakva)
 
 == 0.2.0
 
-* Switched to treetop grammer for parsing (subakva)
-* Added ability to add/remove servers and re-write the config file
-* Added ability to parse and update attributes as well as entire servers (subakva)
-* Added helper method to add a server to a listener or backend definition
-* Fix errors with nil attributes list. (wpeterson)
-* Adds support for comments as top-level syntax elements in configs. (wpeterson)
+* Switched to treetop grammer for parsing (@subakva)
+* Added ability to add/remove servers and re-write the config file (@subakva)
+* Added ability to parse and update attributes as well as entire servers (@subakva)
+* Added helper method to add a server to a listener or backend definition (@subakva)
+* Fix errors with nil attributes list. (@wpeterson)
+* Adds support for comments as top-level syntax elements in configs. (@wpeterson)
 
 == 0.1.0
 
-* Initial release
-* Added ability to parse an haproxy config file
+* Initial release (@subakva)
+* Added ability to parse an haproxy config file (@subakva)
