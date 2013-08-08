@@ -12,7 +12,7 @@ describe "HAProxy::Parser" do
       @config.backends.size.should == 2
       logs_backend = @config.backend('logs')
 
-      logs_backend.servers.size.should == 3
+      logs_backend.servers.size.should == 4
 
       server1 = logs_backend.servers['prd_log_1']
       server1.name.should == 'prd_log_1'
@@ -27,6 +27,11 @@ describe "HAProxy::Parser" do
       server3 = logs_backend.servers['prd_log_2']
       server3.name.should == 'prd_log_2'
       server3.host.should   == '10.215.157.10'
+      server3.port.should == '8000'
+
+      server3 = logs_backend.servers['prd_log_3']
+      server3.name.should == 'prd_log_3'
+      server3.host.should   == 'cloudloghost1'
       server3.port.should == '8000'
     end
   end
