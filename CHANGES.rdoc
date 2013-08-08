@@ -1,3 +1,10 @@
+== 0.3.0
+
+* Fixed: Handle server configurations that do not have any extra attributes (subakva)
+* Fixed: Allow early blanks (jessekempf)
+* Dev: Added cane and simplecov
+* Dev: switched from jeweler to bundler gem management
+
 == 0.2.0
 
 * Switched to treetop grammer for parsing (subakva)
