@@ -24,7 +24,7 @@ describe "HAProxy::Config" do
       new_config = HAProxy::Parser.new.parse(new_config_text)
       s = new_config.backend('www_main').servers['prd_www_1']
       s.should_not be_nil
-      s.attributes['disabled'].should be_true
+      s.attributes['disabled'].should be_truthy
     end
 
     it 'can re-render a config file with a server added' do
