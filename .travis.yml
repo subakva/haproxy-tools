@@ -3,11 +3,6 @@ cache: bundler
 
 rvm:
   - "1.9"
-  - "jruby-19mode"
-
-env:
-  global:
-    - "JRUBY_OPTS=-Xcext.enabled=true"
 
 script: "bundle exec rake spec"
 
