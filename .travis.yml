@@ -1,0 +1,10 @@
+language:ruby
+rvm:
+  - 1.9
+  - 2.0
+  - 2.1
+  - 2.2
+  - jruby-19mode
+  - jruby-20mode
+  - jruby-21mode
+  - jruby-22mode
