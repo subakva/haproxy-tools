@@ -36,6 +36,31 @@ describe "HAProxy::Parser" do
     end
   end
 
+  context 'basic 1.5 config file' do
+    before(:each) do
+      @parser = HAProxy::Parser.new
+      @config = @parser.parse_file('spec/fixtures/simple.haproxy15.cfg')
+    end
+
+    it "parses structured configs" do
+      defaults = @config.defaults.first.config
+
+      defaults['timeout'].should be_an_instance_of(Hash)
+      defaults['errorfile'].should be_an_instance_of(Hash)
+
+      defaults['timeout'].keys.should == ['connect', 'client', 'server']
+      defaults['errorfile'].keys.should == ['400', '504']
+
+      defaults['timeout'].should == {'connect' => '5000ms', 'client' => '50000ms', 'server' => '50000ms'}
+      defaults['errorfile'].should == {
+          '400' => '/etc/haproxy/error/400.http',
+          '504' => '/etc/haproxy/error/504.http'
+      }
+
+    end
+
+  end
+
   context 'basic config file' do
     before(:each) do
       @parser = HAProxy::Parser.new
@@ -56,7 +81,7 @@ describe "HAProxy::Parser" do
       defaults.config['mode'].should == 'http'
       defaults.config['clitimeout'].should == '60s'
       defaults.config['srvtimeout'].should == '30000'
-      defaults.config['contimeout'].should == '4000000us'
+      defaults.config['contimeout'].should == '40000000us'
 
       defaults.options.size.should == 1
       defaults.options.should include('httpclose')

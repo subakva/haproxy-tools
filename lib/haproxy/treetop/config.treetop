@@ -56,7 +56,7 @@ module HAProxy::Treetop
     end
 
     rule config_block
-      (server_line / option_line / config_line / comment_line / blank_line)* <ConfigBlock>
+      (duration_line / server_line / option_line / config_line / comment_line / blank_line)* <ConfigBlock>
     end
 
     rule server_line
@@ -68,7 +68,19 @@ module HAProxy::Treetop
     end
 
     rule config_line
-      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend") keyword whitespace value? comment_text? line_break <ConfigLine>
+      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend") keyword whitespace value? whitespace keyargs? comment_text? line_break <ConfigLine>
+    end
+
+    rule duration_line
+       whitespace time_keys whitespace time_values comment_text? line_break <TimeLine>
+    end
+
+    rule time_keys
+      ('cli' / 'srv' / 'con') 'timeout'
+    end
+
+    rule time_values
+      [\d]+ ( 'us' / 'ms' / 's' / 'm' / 'h' / 'd' )
     end
 
     rule comment_line
@@ -124,7 +136,11 @@ module HAProxy::Treetop
     end
 
     rule value
-      [^#\n]+ <Value>
+      [^#\s]+ <Value>
+    end
+
+    rule keyargs
+      [^#\n]+ <Keyargs>
     end
 
     rule char

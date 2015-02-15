@@ -174,7 +174,16 @@ module HAProxy
 
     def config_hash_from_config_section(cs)
       cs.config_lines.reject{|l| l.keyword.content == 'option'}.inject({}) do |ch, l|
-        ch[l.keyword.content] = l.value ? l.value.content : nil
+        if l.keyargs
+          if not ['errorfile', 'timeout'].include? l.keyword.content
+            ch[l.keyword.content] = "#{l.value.content} #{l.keyargs.content}"
+          else
+            ch[l.keyword.content] = {} if ch[l.keyword.content].nil?
+            ch[l.keyword.content][l.value.content] =l.keyargs.content
+          end
+        else
+          ch[l.keyword.content] = l.value ? l.value.content : nil
+        end
         ch
       end
     end
