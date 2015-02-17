@@ -18,7 +18,8 @@ describe "HAProxy::Config" do
 
     it 'can re-render a config file with a server attribute added' do
       b = @config.backend('www_main')
-      b.servers['prd_www_1'].attributes['disabled'] = true
+      prd_www_1 = b.servers['prd_www_1']
+      prd_www_1.attributes['disabled'] = true
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)

@@ -45,17 +45,12 @@ describe "HAProxy::Parser" do
     it "parses structured configs" do
       defaults = @config.defaults.first.config
 
-      defaults['timeout'].should be_an_instance_of(Hash)
-      defaults['errorfile'].should be_an_instance_of(Hash)
+      defaults['timeout connect'].should == '5000ms'
+      defaults['timeout client'].should == '5000ms'
+      defaults['timeout server'].should == '5000ms'
 
-      defaults['timeout'].keys.should == ['connect', 'client', 'server']
-      defaults['errorfile'].keys.should == ['400', '504']
-
-      defaults['timeout'].should == {'connect' => '5000ms', 'client' => '50000ms', 'server' => '50000ms'}
-      defaults['errorfile'].should == {
-          '400' => '/etc/haproxy/error/400.http',
-          '504' => '/etc/haproxy/error/504.http'
-      }
+      defaults['errorfile 400'].should == '/etc/haproxy/errors/400.http'
+      defaults['errorfile 504'].should == '/etc/haproxy/errors/504.http'
 
     end
 
@@ -81,7 +76,7 @@ describe "HAProxy::Parser" do
       defaults.config['mode'].should == 'http'
       defaults.config['clitimeout'].should == '60s'
       defaults.config['srvtimeout'].should == '30000'
-      defaults.config['contimeout'].should == '40000000us'
+      defaults.config['contimeout'].should == '4000000us'
 
       defaults.options.size.should == 1
       defaults.options.should include('httpclose')
