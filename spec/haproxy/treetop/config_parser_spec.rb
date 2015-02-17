@@ -90,8 +90,8 @@ describe HAProxy::Treetop::ConfigParser do
     @result.elements[4].class.should == HAProxy::Treetop::BackendSection
   end
 
-  it 'can parse valid units of time'
   it 'can parse userlist sections'
+  it 'can parse valid units of time'
   it 'can parse strings with escaped spaces'
   it 'can parse files with escaped quotes'
   it 'can parse keywords with hyphens'

@@ -47,10 +47,6 @@ module HAProxy
       def value
         self.elements.find {|e| e.class == Value}
       end
-
-      def keyargs
-        self.elements.find {|e| e.class == Keyargs}
-      end
     end
 
     class Whitespace < ::Treetop::Runtime::SyntaxNode
@@ -90,10 +86,6 @@ module HAProxy
       include StrippedTextContent
     end
 
-    class Keyargs < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-    end
-
     class CommentText < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
     end
@@ -113,10 +105,6 @@ module HAProxy
     class ConfigLine < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       include OptionalValueElement
-    end
-
-    class TimeLine < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
     end
 
     class OptionLine < ::Treetop::Runtime::SyntaxNode

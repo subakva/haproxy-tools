@@ -74,9 +74,9 @@ describe "HAProxy::Parser" do
 
       defaults = @config.defaults.first
       defaults.config['mode'].should == 'http'
-      defaults.config['clitimeout'].should == '60s'
+      defaults.config['clitimeout'].should == '60000'
       defaults.config['srvtimeout'].should == '30000'
-      defaults.config['contimeout'].should == '4000000us'
+      defaults.config['contimeout'].should == '4000'
 
       defaults.options.size.should == 1
       defaults.options.should include('httpclose')
