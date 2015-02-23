@@ -88,7 +88,7 @@ module HAProxy::Treetop
     end
 
     rule keyword
-      [a-z\-\.]+ <Keyword>
+       (("errorfile" / "timeout") whitespace)? [a-z0-9\-\.]+ <Keyword>
     end
 
     rule server_name
@@ -186,4 +186,3 @@ module HAProxy::Treetop
 
   end
 end
-

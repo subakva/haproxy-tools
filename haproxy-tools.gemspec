@@ -18,12 +18,14 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ['lib']
 
+  gem.required_ruby_version = '1.9.3'
+
   gem.add_dependency('net-scp')
-  gem.add_dependency("treetop")
-  gem.add_development_dependency("rake")
-  gem.add_development_dependency("rspec")
-  gem.add_development_dependency("yard")
+  gem.add_dependency('treetop')
+  gem.add_development_dependency('rake')
+  gem.add_development_dependency('rspec', '~> 2.14')
+  gem.add_development_dependency('yard')
   gem.add_development_dependency('simplecov')
   gem.add_development_dependency('cane')
-  gem.add_development_dependency('pry-debugger')
+  # gem.add_development_dependency('pry-debugger')
 end

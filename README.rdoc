@@ -1,3 +1,4 @@
+{<img src="https://travis-ci.org/subakva/haproxy-tools.svg?branch=master" alt="Build Status" />}[https://travis-ci.org/subakva/haproxy-tools]
 = haproxy-tools
 
 Tools for managing HAProxy with Ruby.

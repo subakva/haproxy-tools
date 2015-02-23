@@ -36,6 +36,26 @@ describe "HAProxy::Parser" do
     end
   end
 
+  context 'basic 1.5 config file' do
+    before(:each) do
+      @parser = HAProxy::Parser.new
+      @config = @parser.parse_file('spec/fixtures/simple.haproxy15.cfg')
+    end
+
+    it "parses structured configs" do
+      defaults = @config.defaults.first.config
+
+      defaults['timeout connect'].should == '5000ms'
+      defaults['timeout client'].should == '5000ms'
+      defaults['timeout server'].should == '5000ms'
+
+      defaults['errorfile 400'].should == '/etc/haproxy/errors/400.http'
+      defaults['errorfile 504'].should == '/etc/haproxy/errors/504.http'
+
+    end
+
+  end
+
   context 'basic config file' do
     before(:each) do
       @parser = HAProxy::Parser.new
