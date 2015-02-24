@@ -172,9 +172,17 @@ module HAProxy
       end
     end
 
-    def config_hash_from_config_section(cs)
+     def config_hash_from_config_section(cs)
       cs.config_lines.reject{|l| l.keyword.content == 'option'}.inject({}) do |ch, l|
-        ch[l.keyword.content] = l.value ? l.value.content : nil
+        if l.keyword.content == "bind"
+          if not ch[l.keyword.content].kind_of?(Array)
+            ch[l.keyword.content] = []
+          end
+          
+          ch[l.keyword.content] << l.value.content
+        else
+          ch[l.keyword.content] = l.value ? l.value.content : nil
+        end
         ch
       end
     end
