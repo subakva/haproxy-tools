@@ -70,13 +70,23 @@ describe "HAProxy::Config" do
       @config = HAProxy::Config.parse_file('spec/fixtures/simple.haproxy15.cfg')
     end
 
-    it 'can re-render a config file with an error page added' do
-      @config.default(nil).config['errorfile 401'] = '/etc/haproxy/errors/401.http'
+    it 'cen re-render a config file with an error page removed' do
+      @config.default.config.delete('errorfile 500')
 
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.defaults.first.config['errorfile 401'].should == '/etc/haproxy/errors/401.http'
+      new_config.default.config.should_not have_key('errorfile 500')
+    end
+
+    it 'can re-render a config file with an error page added' do
+      @config.default.config['errorfile 401'] = '/etc/haproxy/errors/401.http'
+
+      new_config_text = @config.render
+
+      new_config = HAProxy::Parser.new.parse(new_config_text)
+      new_config.default.config.should have_key('errorfile 401')
+      new_config.default.config['errorfile 401'].should == '/etc/haproxy/errors/401.http'
     end
 
   end
