@@ -71,12 +71,13 @@ describe "HAProxy::Config" do
     end
 
     it 'cen re-render a config file with an error page removed' do
-      @config.default.config.delete('errorfile 500')
+      @config.default.config.should have_key('errorfile 400')
+      @config.default.config.delete('errorfile 400')
 
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.default.config.should_not have_key('errorfile 500')
+      new_config.default.config.should_not have_key('errorfile 400')
     end
 
     it 'can re-render a config file with an error page added' do
