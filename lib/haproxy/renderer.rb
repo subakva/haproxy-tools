@@ -8,6 +8,7 @@ module HAProxy
       self.config       = config
       self.source_tree  = source_tree
       @server_list      = {}
+      @config_list      = {}
       @context          = self.config
       @prev_context     = self.config
       @config_text      = ''
@@ -32,10 +33,21 @@ module HAProxy
           next if @context.servers[e.name].nil?
         end
 
+        if e.class == HAProxy::Treetop::ConfigLine and @context.class == HAProxy::Default
+          # Keep track of the configs in this config block we've seen, so that we can detect and render new ones.
+          @config_list[e.key] = e
+          # Don't render the config *if* it's been removed from the config block.
+          next if @context.config[e.key].nil?
+        end
+
         if e.class == HAProxy::Treetop::ServerLine
           # Use a custom rendering method for servers, since we allow them to be
           # added/removed/changed.
           render_server_element(e)
+        elsif e.class== HAProxy::Treetop::ConfigLine and @context.class == HAProxy::Default
+          # Use a custom rendering method for configs, since we allow them to be
+          # added/removed/changed.
+          render_config_line_element(e)
         elsif e.elements && e.elements.size > 0
           render_node(e)
         else
@@ -51,6 +63,17 @@ module HAProxy
       @context != @prev_context
     end
 
+    def render_config_line_element(e)
+      config_key = e.key.gsub(/\s+/, ' ')
+      config_value = @context.config[e.key]
+      config_value = config_value.gsub(/\s+/, ' ') if not config_value.nil?
+      render_config_line(config_key, config_value)
+    end
+
+    def render_config_line(key, value)
+      @config_text << "\t#{key} #{value}\n"
+    end
+
     def render_server_element(e)
       server = @context.servers[e.name]
       render_server(server)
@@ -62,6 +85,16 @@ module HAProxy
     end
 
     def handle_context_change
+      if [HAProxy::Default].include?(@prev_context.class)
+        # Render any configs which were added
+        new_configs = @prev_context.config.keys - @config_list.keys
+
+        new_configs.each do |config_name|
+          config_value = @prev_context.config[config_name]
+          render_config_line(config_name, config_value)
+        end
+      end
+
       if [HAProxy::Listener, HAProxy::Backend].include?(@prev_context.class)
         # Render any servers that were added
         new_servers = @prev_context.servers.keys - @server_list.keys

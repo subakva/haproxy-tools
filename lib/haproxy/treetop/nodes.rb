@@ -105,6 +105,15 @@ module HAProxy
     class ConfigLine < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       include OptionalValueElement
+
+      def key
+        self.keyword.content
+      end
+
+      def attribute
+        self.value.content
+      end
+
     end
 
     class OptionLine < ::Treetop::Runtime::SyntaxNode
