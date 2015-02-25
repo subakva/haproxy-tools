@@ -81,6 +81,7 @@ describe "HAProxy::Config" do
     end
 
     it 'can re-render a config file with an error page added' do
+      @config.default.config.should_not have_key('errorfile 401')
       @config.default.config['errorfile 401'] = '/etc/haproxy/errors/401.http'
 
       new_config_text = @config.render
