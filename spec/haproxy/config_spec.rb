@@ -98,6 +98,17 @@ describe "HAProxy::Config" do
       @config = HAProxy::Config.parse_file('spec/fixtures/simple.haproxy.cfg')
     end
 
+    it 'can re-render a config file with a config removed' do
+      @config.default.config.should have_key('clitimeout')
+      @config.default.config.delete('clitimeout')
+
+      new_config_text = @config.render
+
+      new_config = HAProxy::Parser.new.parse(new_config_text)
+      new_config.default.config.should_not have_key('clitimeout')
+
+    end
+
     it 'can re-render a config file with a server removed' do
       l = @config.listener('http_proxy')
       l.servers.delete('web1')
