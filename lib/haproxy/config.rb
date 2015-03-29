@@ -15,7 +15,7 @@ module HAProxy
       new_server.name       = name
       new_server.host       = host
       new_server.port       = options[:port] if options[:port]
-      new_server.attributes ||= options[:attributes] || []
+      new_server.attributes ||= options[:attributes] || {}
       self.servers[name] = new_server
       new_server
     end

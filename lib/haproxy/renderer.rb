@@ -110,10 +110,10 @@ module HAProxy
     def render_server_attributes(attributes)
       attribute_string = ""
       attributes.each do |name, value|
-        attribute_string << name
+        attribute_string << name.to_s
         attribute_string << " "
         if value && value != true
-          attribute_string << value
+          attribute_string << value.to_s
           attribute_string << " "
         end
       end

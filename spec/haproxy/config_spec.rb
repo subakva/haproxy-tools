@@ -29,7 +29,7 @@ describe "HAProxy::Config" do
 
     it 'can re-render a config file with a server added' do
       b = @config.backend('www_main')
-      b.add_server('prd_www_4', '99.99.99.99', :port => '8000')
+      b.add_server('prd_www_4', '99.99.99.99', :port => '8000', attributes: { :weight => 128 })
 
       new_config_text = @config.render
 
@@ -39,7 +39,7 @@ describe "HAProxy::Config" do
       s.name.should == 'prd_www_4'
       s.host.should == '99.99.99.99'
       s.port.should == '8000'
-      s.attributes.to_a.should == []
+      s.attributes.to_a.should == [['weight', '128']]
     end
 
     it 'can re-render a config file with a server added based on template' do
