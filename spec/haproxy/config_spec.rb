@@ -65,9 +65,48 @@ describe "HAProxy::Config" do
     end
   end
 
+  describe 'render simple 1.5 config' do
+    before(:each) do
+      @config = HAProxy::Config.parse_file('spec/fixtures/simple.haproxy15.cfg')
+    end
+
+    it 'cen re-render a config file with an error page removed' do
+      @config.default.config.should have_key('errorfile 400')
+      @config.default.config.delete('errorfile 400')
+
+      new_config_text = @config.render
+
+      new_config = HAProxy::Parser.new.parse(new_config_text)
+      new_config.default.config.should_not have_key('errorfile 400')
+    end
+
+    it 'can re-render a config file with an error page added' do
+      @config.default.config.should_not have_key('errorfile 401')
+      @config.default.config['errorfile 401'] = '/etc/haproxy/errors/401.http'
+
+      new_config_text = @config.render
+
+      new_config = HAProxy::Parser.new.parse(new_config_text)
+      new_config.default.config.should have_key('errorfile 401')
+      new_config.default.config['errorfile 401'].should == '/etc/haproxy/errors/401.http'
+    end
+
+  end
+
   describe 'render simple config' do
     before(:each) do
       @config = HAProxy::Config.parse_file('spec/fixtures/simple.haproxy.cfg')
+    end
+
+    it 'can re-render a config file with a config removed' do
+      @config.default.config.should have_key('clitimeout')
+      @config.default.config.delete('clitimeout')
+
+      new_config_text = @config.render
+
+      new_config = HAProxy::Parser.new.parse(new_config_text)
+      new_config.default.config.should_not have_key('clitimeout')
+
     end
 
     it 'can re-render a config file with a server removed' do

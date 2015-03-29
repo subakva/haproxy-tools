@@ -57,7 +57,7 @@ module HAProxy
       self.frontends.find { |f| f.name == name }
     end
 
-    def default(name)
+    def default(name=nil)
       self.defaults.find { |d| d.name == name }
     end
 
