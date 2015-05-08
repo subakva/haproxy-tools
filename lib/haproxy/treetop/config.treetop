@@ -36,7 +36,7 @@ module HAProxy::Treetop
     end
 
     rule userlist_header
-      whitespace "userlist" whitespace proxy_name comment_text? line_break <UseristHeader>
+      whitespace "userlist" whitespace proxy_name comment_text? line_break <UserlistHeader>
     end
 
     rule defaults_header
@@ -68,7 +68,7 @@ module HAProxy::Treetop
     end
 
     rule config_line
-      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend") keyword whitespace value? comment_text? line_break <ConfigLine>
+      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend" / "userlist") keyword whitespace value? comment_text? line_break <ConfigLine>
     end
 
     rule comment_line
@@ -88,7 +88,18 @@ module HAProxy::Treetop
     end
 
     rule keyword
-       (("errorfile" / "timeout") whitespace)? [a-z0-9\-\.]+ <Keyword>
+       ((
+            "capture response header" /
+            "capture request header" /
+            "use_backend" /
+            "errorfile" /
+            "errorloc" /
+            "timeout" /
+            "group" /
+            "stats" /
+            "user" /
+            "acl"
+        ) whitespace)? [A-Za-z0-9\-\._]+ <Keyword>
     end
 
     rule server_name

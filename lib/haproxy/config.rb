@@ -1,5 +1,6 @@
 module HAProxy
   Default   = Struct.new(:name, :options, :config)
+  Userlist  = Struct.new(:name, :options, :config)
   Backend   = Struct.new(:name, :options, :config, :servers)
   Listener  = Struct.new(:name, :host, :port, :options, :config, :servers)
   Frontend  = Struct.new(:name, :host, :port, :options, :config)
@@ -34,7 +35,7 @@ module HAProxy
 
   # Represents an haproxy configuration file.
   class Config
-    attr_accessor :original_parse_tree, :listeners, :backends, :frontends, :global, :defaults
+    attr_accessor :original_parse_tree, :listeners, :backends, :frontends, :global, :defaults, :userlists
 
     def initialize(parse_tree)
       self.original_parse_tree = parse_tree
@@ -42,6 +43,7 @@ module HAProxy
       self.listeners  = []
       self.frontends  = []
       self.defaults   = []
+      self.userlists  = []
       self.global     = {}
     end
 
@@ -51,6 +53,10 @@ module HAProxy
 
     def backend(name)
       self.backends.find { |b| b.name == name }
+    end
+
+    def userlist(name)
+      self.userlists.find { |b| b.name == name }
     end
 
     def frontend(name)

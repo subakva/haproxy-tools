@@ -1,3 +1,7 @@
+CONFIG_NODES = [HAProxy::Default, HAProxy::Backend, HAProxy::Listener, HAProxy::Frontend, HAProxy::Userlist]
+OPTION_NODES = [HAProxy::Default, HAProxy::Backend, HAProxy::Listener, HAProxy::Frontend, HAProxy::Userlist]
+SERVER_NODES = [HAProxy::Listener, HAProxy::Backend]
+
 module HAProxy
   # Responsible for rendering an HAProxy::Config instance to a string.
   class Renderer
@@ -9,8 +13,10 @@ module HAProxy
       self.source_tree  = source_tree
       @server_list      = {}
       @config_list      = {}
+      @option_list      = {}
       @context          = self.config
       @prev_context     = self.config
+      @linebreak_active = false
       @config_text      = ''
     end
 
@@ -29,28 +35,48 @@ module HAProxy
         if e.class == HAProxy::Treetop::ServerLine
           # Keep track of the servers that we've seen, so that we can detect and render new ones.
           @server_list[e.name] = e
+
           # Don't render the server element if it's been deleted from the config.
           next if @context.servers[e.name].nil?
-        end
 
-        if e.class == HAProxy::Treetop::ConfigLine and @context.class == HAProxy::Default
-          # Keep track of the configs in this config block we've seen, so that we can detect and render new ones.
-          @config_list[e.key] = e
-          # Don't render the config *if* it's been removed from the config block.
-          next if @context.config[e.key].nil?
-        end
-
-        if e.class == HAProxy::Treetop::ServerLine
           # Use a custom rendering method for servers, since we allow them to be
           # added/removed/changed.
           render_server_element(e)
-        elsif e.class== HAProxy::Treetop::ConfigLine and @context.class == HAProxy::Default
+        elsif e.class == HAProxy::Treetop::ConfigLine and CONFIG_NODES.include?(@context.class)
+          # Keep track of the configs in this config block we've seen, so that we can detect and render new ones.
+          @config_list[e.key] = e
+
+          # Don't render the config *if* it's been removed from the config block.
+          next unless @context.config.has_key?(e.key)
+
           # Use a custom rendering method for configs, since we allow them to be
           # added/removed/changed.
           render_config_line_element(e)
+        elsif e.class == HAProxy::Treetop::OptionLine and OPTION_NODES.include?(@context.class)
+          # Keep track of the options in this option block we've seen, so that we can detect and render new ones.
+          @option_list[e.key] = e
+
+          # Don't render the option *if* it's been removed from the option block.
+          next unless @context.options.has_key?(e.key)
+
+          # Use a custom rendering method for options, since we allow them to be
+          # added/removed/changed.
+          render_option_line_element(e)
         elsif e.elements && e.elements.size > 0
           render_node(e)
         else
+          if e.class == HAProxy::Treetop::LineBreak
+            @linebreak_active = true
+          elsif @linebreak_active
+            if e.text_value =~ /\S/
+              if e.text_value.size == 1
+                @config_text << "\t"
+              end
+              @linebreak_active = false
+            else
+              next
+            end
+          end
           @config_text << e.text_value
         end
       end
@@ -74,6 +100,17 @@ module HAProxy
       @config_text << "\t#{key} #{value}\n"
     end
 
+    def render_option_line_element(e)
+      option_key = e.key.gsub(/\s+/, ' ')
+      option_value = @context.options[e.key]
+      option_value = option_value.gsub(/\s+/, ' ') if not option_value.nil?
+      render_option_line(option_key, option_value)
+    end
+
+    def render_option_line(key, value)
+      @config_text << "\toption #{key} #{value}\n"
+    end
+
     def render_server_element(e)
       server = @context.servers[e.name]
       render_server(server)
@@ -85,7 +122,7 @@ module HAProxy
     end
 
     def handle_context_change
-      if [HAProxy::Default].include?(@prev_context.class)
+      if CONFIG_NODES.include?(@prev_context.class)
         # Render any configs which were added
         new_configs = @prev_context.config.keys - @config_list.keys
 
@@ -95,7 +132,17 @@ module HAProxy
         end
       end
 
-      if [HAProxy::Listener, HAProxy::Backend].include?(@prev_context.class)
+      if OPTION_NODES.include?(@prev_context.class)
+        # Render any configs which were added
+        new_options = @prev_context.options.keys - @option_list.keys
+
+        new_options.each do |option_name|
+          option_value = @prev_context.options[option_name]
+          render_option_line(option_name, option_value)
+        end
+      end
+
+      if SERVER_NODES.include?(@prev_context.class)
         # Render any servers that were added
         new_servers = @prev_context.servers.keys - @server_list.keys
 
@@ -105,6 +152,8 @@ module HAProxy
         end
       end
       @server_list = {}
+      @config_list = {}
+      @option_list = {}
     end
 
     def render_server_attributes(attributes)
@@ -137,6 +186,9 @@ module HAProxy
       when 'HAProxy::Treetop::BackendSection'
         section_name = e.backend_header.proxy_name ? e.backend_header.proxy_name.content : nil
         @context = @config.backend(section_name)
+      when 'HAProxy::Treetop::UserlistSection'
+        section_name = e.userlist_header.proxy_name ? e.userlist_header.proxy_name.content : nil
+        @context = @config.userlist(section_name)
       else
         @context = @prev_context
       end
