@@ -11,7 +11,32 @@ module HAProxy
     }
     # Added in haproxy 1.4
     SERVER_ATTRIBUTE_NAMES_1_4 = %w{error-limit observe on-error}
-    SERVER_ATTRIBUTE_NAMES = SERVER_ATTRIBUTE_NAMES_1_3 + SERVER_ATTRIBUTE_NAMES_1_4
+    # Added in haproxy 1.5
+    SERVER_ATTRIBUTE_NAMES_1_5 = %w{ 
+      agent-check agent-inter agent-port ca-file check-send-proxy check-ssl
+      ciphers crl-file crt error-limit force-sslv3 force-tlsv10 force-tlsv11
+      force-tlsv12 no-sslv3 no-tls-tickets no-tlsv10 no-tlsv11 no-tlsv12 observe
+      on-error on-marked-down on-marked-up send-proxy send-proxy-v2 send-proxy-v2-ssl
+      send-proxy-v2-ssl-cn ssl verify verifyhost
+    }
+    # Added in haproxy 1.6
+    SERVER_ATTRIBUTE_NAMES_1_6 = %w{
+      namespace no-ssl-reuse non-stick resolve-prefer resolvers sni tcp-ut
+    }
+    # Added in haproxy 1.7
+    SERVER_ATTRIBUTE_NAMES_1_7 = %w{
+      agent-send init-addr resolve-net
+    }
+    SERVER_ATTRIBUTE_NAMES_1_8 = %w{
+      agent-addr check-sni enabled force-tlsv13 no-agent-check no-backup no-check no-check-ssl
+      no-send-proxy no-send-proxy-v2 no-ssl no-tlsv13 no-verifyhost ssl-max-ver ssl-min-ver
+      ssl-reuse stick tls-tickets
+    }
+    SERVER_ATTRIBUTE_NAMES_1_9 = %w{
+      no-send-proxy-v2-ssl no-send-proxy-v2-cn
+    }
+    SERVER_ATTRIBUTE_NAMES = SERVER_ATTRIBUTE_NAMES_1_3 + SERVER_ATTRIBUTE_NAMES_1_4 + SERVER_ATTRIBUTE_NAMES_1_5 \
+      + SERVER_ATTRIBUTE_NAMES_1_6 + SERVER_ATTRIBUTE_NAMES_1_7 + SERVER_ATTRIBUTE_NAMES_1_8 + SERVER_ATTRIBUTE_NAMES_1_9
 
     attr_accessor :verbose, :options, :parse_result
 
