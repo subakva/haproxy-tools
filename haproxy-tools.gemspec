@@ -22,7 +22,7 @@ Gem::Specification.new do |gem|
 
   gem.add_dependency('net-scp')
   gem.add_dependency('treetop')
-  gem.add_development_dependency('rake', '< 11.0')
+  gem.add_development_dependency('rake')
   gem.add_development_dependency('rspec', '~> 2.14')
   gem.add_development_dependency('yard')
   gem.add_development_dependency('simplecov')
