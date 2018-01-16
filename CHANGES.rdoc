@@ -1,3 +1,7 @@
+== 0.5.0
+* [#16] Updated Readme (@chriswessells)
+* [#14] Adds Server Attributes for More Versions (@chriswessells)
+
 == 0.4.2
 * [#11] Added functionality to allow addition of new configs (@drewsonne)
 * [#12] Support symbols as server attributes
