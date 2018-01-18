@@ -119,6 +119,14 @@ module HAProxy
     class OptionLine < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       include OptionalValueElement
+
+      def key
+        self.keyword.content
+      end
+
+      def attribute
+        self.value.content
+      end
     end
 
     class ServerLine < ::Treetop::Runtime::SyntaxNode
@@ -202,6 +210,10 @@ module HAProxy
 
       def frontends
         self.elements.select {|e| e.class == FrontendSection}
+      end
+
+      def userlists
+        self.elements.select {|e| e.class == UserlistSection}
       end
 
       def backends

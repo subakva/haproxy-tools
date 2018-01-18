@@ -74,6 +74,7 @@ module HAProxy
         config.backends   += collect_backends(result)
         config.listeners  += collect_listeners(result)
         config.defaults   += collect_defaults(result)
+        config.userlists  += collect_userlists(result)
       end
     end
 
@@ -82,6 +83,14 @@ module HAProxy
         f.name        = try_send(fs.frontend_header, :proxy_name, :content)
         f.host        = try_send(fs.frontend_header, :service_address, :host, :content)
         f.port        = try_send(fs.frontend_header, :service_address, :port, :content)
+        f.options     = options_hash_from_config_section(fs)
+        f.config      = config_hash_from_config_section(fs)
+      end
+    end
+
+    def build_userlist(fs)
+      Userlist.new.tap do |f|
+        f.name        = try_send(fs.userlist_header, :proxy_name, :content)
         f.options     = options_hash_from_config_section(fs)
         f.config      = config_hash_from_config_section(fs)
       end
@@ -121,6 +130,10 @@ module HAProxy
 
     def collect_backends(result)
       result.backends.map { |bs| build_backend(bs) }
+    end
+
+    def collect_userlists(result)
+      result.userlists.map { |bs| build_userlist(bs) }
     end
 
     def collect_listeners(result)
