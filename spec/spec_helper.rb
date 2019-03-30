@@ -5,6 +5,7 @@ require 'bundler'
 Bundler.require(:default, :development)
 
 require 'haproxy_tools'
+require 'awesome_print'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
