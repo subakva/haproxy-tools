@@ -12,7 +12,7 @@ module HAProxy
       @config_list      = {}
       @context          = self.config
       @prev_context     = self.config
-      @config_text      = +""
+      @config_text      = "".dup
     end
 
     def render
@@ -112,7 +112,7 @@ module HAProxy
     end
 
     def render_server_attributes(attributes)
-      attribute_string = +""
+      attribute_string = "".dup
       attributes.each do |name, value|
         attribute_string << name.to_s
         attribute_string << " "
