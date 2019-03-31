@@ -9,7 +9,7 @@ Tools for managing HAProxy with Ruby.
 
 == Gemfile
 
-  gem 'haproxy-tools', '~> 0.5.0'
+  gem 'haproxy-tools', '~> 0.6.0'
 
 == Basic Configuration File Parsing
 
