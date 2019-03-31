@@ -3,6 +3,17 @@
 require "spec_helper"
 
 describe "HAProxy::Config" do
+  describe 'managing userlists' do
+    let!(:config) { HAProxy::Config.parse_file("spec/fixtures/userlist.haproxy.cfg") }
+
+    it 're-renders the config with the new user' do
+      ul = config.userlist('groups_list_users')
+      ul.add_user('argle', 'bargle', secure: false, groups: 'G1')
+      lines = config.render.split("\n")
+      expect(lines).to include("\tuser argle password bargle groups G1")
+    end
+  end
+
   describe "render userlist config" do
     before(:each) do
       @config = HAProxy::Config.parse_file("spec/fixtures/userlist.haproxy.cfg")

@@ -6,7 +6,7 @@ module HAProxy
   Listener  = Struct.new(:name, :host, :port, :options, :config, :servers)
   Frontend  = Struct.new(:name, :host, :port, :options, :config)
   Server    = Struct.new(:name, :host, :port, :attributes)
-  Userlist  = Struct.new(:name, :users, :groups)
+  # Userlist  = Struct.new(:name, :users, :groups)
   UserlistGroup  = Struct.new(:name, :users)
   UserlistUser   = Struct.new(:name, :password, :groups)
 
@@ -34,6 +34,17 @@ module HAProxy
   # Represents a backend configuration block.
   class Backend
     include ServerList
+  end
+
+  class Userlist < Struct.new(:name, :users, :groups)
+    def add_user(username, password, secure: false, groups: nil)
+      users << UserlistUser.new.tap do |u|
+        u.name = username
+        password_type = secure ? 'password' : 'insecure-password'
+        u.password = "#{password_type} #{password}"
+        u.groups = [*groups].compact.join(",")
+      end
+    end
   end
 
   # Represents an haproxy configuration file.

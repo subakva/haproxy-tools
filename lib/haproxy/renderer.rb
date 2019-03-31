@@ -9,6 +9,7 @@ module HAProxy
       self.config       = config
       self.source_tree  = source_tree
       @server_list      = {}
+      @userlist_users   = {}
       @config_list      = {}
       @context          = self.config
       @prev_context     = self.config
@@ -31,7 +32,14 @@ module HAProxy
           # Keep track of the servers that we've seen, so that we can detect and render new ones.
           @server_list[e.name] = e
           # Don't render the server element if it's been deleted from the config.
-          next if @context.servers[e.name].nil?
+          next unless @context.servers.key?(e.name)
+        end
+
+        if e.class == HAProxy::Treetop::UserLine
+          # Keep track of the servers that we've seen, so that we can detect and render new ones.
+          @userlist_users[e.name] = e
+          # Don't render the server element if it's been deleted from the config.
+          next unless @context.users.key?(e.name)
         end
 
         if (e.class == HAProxy::Treetop::ConfigLine) && (@context.class == HAProxy::Default)
@@ -141,6 +149,9 @@ module HAProxy
       when "HAProxy::Treetop::BackendSection"
         section_name = e.backend_header.proxy_name ? e.backend_header.proxy_name.content : nil
         @context = @config.backend(section_name)
+      when "HAProxy::Treetop::UserlistSection"
+        section_name = e.userlist_header.proxy_name ? e.userlist_header.proxy_name.content : nil
+        @context = @config.userlist(section_name)
       else
         @context = @prev_context
       end
