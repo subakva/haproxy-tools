@@ -33,9 +33,18 @@ module HAProxy
       no-send-proxy no-send-proxy-v2 no-send-proxy-v2-ssl no-send-proxy-v2-ssl-cn no-ssl no-tlsv13
       no-verifyhost ssl-max-ver ssl-min-ver ssl-reuse stick tls-tickets
     }
-    # SERVER_ATTRIBUTE_NAMES_1_9 = %w{ } # as of 1/16/18 I do not see new server attributes in haproxy 1.9
-    SERVER_ATTRIBUTE_NAMES = SERVER_ATTRIBUTE_NAMES_1_3 + SERVER_ATTRIBUTE_NAMES_1_4 + SERVER_ATTRIBUTE_NAMES_1_5 \
-      + SERVER_ATTRIBUTE_NAMES_1_6 + SERVER_ATTRIBUTE_NAMES_1_7 + SERVER_ATTRIBUTE_NAMES_1_8
+    SERVER_ATTRIBUTE_NAMES_1_9 = %w[
+      alpn check-alpn max-reuse npn pool-max-conn pool-purge-delay proto proxy-v2-options
+    ].freeze
+    SERVER_ATTRIBUTE_NAMES = [
+      SERVER_ATTRIBUTE_NAMES_1_3,
+      SERVER_ATTRIBUTE_NAMES_1_4,
+      SERVER_ATTRIBUTE_NAMES_1_5,
+      SERVER_ATTRIBUTE_NAMES_1_6,
+      SERVER_ATTRIBUTE_NAMES_1_7,
+      SERVER_ATTRIBUTE_NAMES_1_8,
+      SERVER_ATTRIBUTE_NAMES_1_9,
+    ].flatten.freeze
 
     attr_accessor :verbose, :options, :parse_result
 

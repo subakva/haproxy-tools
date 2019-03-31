@@ -148,4 +148,3 @@ describe "HAProxy::Parser" do
     end
   end
 end
-
