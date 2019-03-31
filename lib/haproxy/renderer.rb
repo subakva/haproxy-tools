@@ -1,8 +1,8 @@
 # frozen_string_literal: true
+
 module HAProxy
   # Responsible for rendering an HAProxy::Config instance to a string.
   class Renderer
-
     attr_accessor :config, :source_tree
 
     def initialize(config, source_tree)
@@ -16,7 +16,7 @@ module HAProxy
     end
 
     def render
-      render_node(self.source_tree)
+      render_node(source_tree)
       handle_context_change
       @config_text
     end
@@ -34,7 +34,7 @@ module HAProxy
           next if @context.servers[e.name].nil?
         end
 
-        if e.class == HAProxy::Treetop::ConfigLine and @context.class == HAProxy::Default
+        if (e.class == HAProxy::Treetop::ConfigLine) && (@context.class == HAProxy::Default)
           # Keep track of the configs in this config block we've seen, so that we can detect and render new ones.
           @config_list[e.key] = e
           # Don't render the config *if* it's been removed from the config block.
@@ -45,7 +45,7 @@ module HAProxy
           # Use a custom rendering method for servers, since we allow them to be
           # added/removed/changed.
           render_server_element(e)
-        elsif e.class== HAProxy::Treetop::ConfigLine and @context.class == HAProxy::Default
+        elsif (e.class == HAProxy::Treetop::ConfigLine) && (@context.class == HAProxy::Default)
           # Use a custom rendering method for configs, since we allow them to be
           # added/removed/changed.
           render_config_line_element(e)
@@ -65,9 +65,9 @@ module HAProxy
     end
 
     def render_config_line_element(e)
-      config_key = e.key.gsub(/\s+/, ' ')
+      config_key = e.key.gsub(/\s+/, " ")
       config_value = @context.config[e.key]
-      config_value = config_value.gsub(/\s+/, ' ') if not config_value.nil?
+      config_value = config_value.gsub(/\s+/, " ") unless config_value.nil?
       render_config_line(config_key, config_value)
     end
 
@@ -126,18 +126,18 @@ module HAProxy
     def update_render_context(e)
       @prev_context = @context
       case e.class.name
-      when 'HAProxy::Treetop::GlobalSection'
+      when "HAProxy::Treetop::GlobalSection"
         @context = @config.global
-      when 'HAProxy::Treetop::DefaultsSection'
+      when "HAProxy::Treetop::DefaultsSection"
         section_name = e.defaults_header.proxy_name ? e.defaults_header.proxy_name.content : nil
         @context = @config.default(section_name)
-      when 'HAProxy::Treetop::ListenSection'
+      when "HAProxy::Treetop::ListenSection"
         section_name = e.listen_header.proxy_name ? e.listen_header.proxy_name.content : nil
         @context = @config.listener(section_name)
-      when 'HAProxy::Treetop::FrontendSection'
+      when "HAProxy::Treetop::FrontendSection"
         section_name = e.frontend_header.proxy_name ? e.frontend_header.proxy_name.content : nil
         @context = @config.frontend(section_name)
-      when 'HAProxy::Treetop::BackendSection'
+      when "HAProxy::Treetop::BackendSection"
         section_name = e.backend_header.proxy_name ? e.backend_header.proxy_name.content : nil
         @context = @config.backend(section_name)
       else
@@ -146,4 +146,3 @@ module HAProxy
     end
   end
 end
-

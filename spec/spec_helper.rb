@@ -1,12 +1,13 @@
 # frozen_string_literal: true
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
-require 'bundler'
+require "bundler"
 Bundler.require(:default, :development)
 
-require 'haproxy_tools'
-require 'awesome_print'
+require "haproxy_tools"
+require "awesome_print"
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
@@ -21,6 +22,5 @@ RSpec.configure do |config|
   # order dependency and want to debug it, you can fix the order by providing
   # the seed, which is printed after each run.
   #     --seed 1234
-  config.order = 'random'
-
+  config.order = "random"
 end

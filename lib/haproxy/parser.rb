@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module HAProxy
   # Responsible for reading an HAProxy config file and building an HAProxy::Config instance.
   class Parser
@@ -6,33 +7,33 @@ module HAProxy
     Error = Class.new(StandardError)
 
     # haproxy 1.3
-    SERVER_ATTRIBUTE_NAMES_1_3 = %w{
+    SERVER_ATTRIBUTE_NAMES_1_3 = %w[
       addr backup check cookie disabled fall id inter fastinter downinter
       maxconn maxqueue minconn port redir rise slowstart source track weight
-    }
+    ]
     # Added in haproxy 1.4
-    SERVER_ATTRIBUTE_NAMES_1_4 = %w{error-limit observe on-error}
+    SERVER_ATTRIBUTE_NAMES_1_4 = %w[error-limit observe on-error]
     # Added in haproxy 1.5
-    SERVER_ATTRIBUTE_NAMES_1_5 = %w{
+    SERVER_ATTRIBUTE_NAMES_1_5 = %w[
       agent-check agent-inter agent-port ca-file check-send-proxy check-ssl
       ciphers crl-file crt error-limit force-sslv3 force-tlsv10 force-tlsv11
       force-tlsv12 no-sslv3 no-tls-tickets no-tlsv10 no-tlsv11 no-tlsv12 non-stick observe
       on-error on-marked-down on-marked-up send-proxy send-proxy-v2 send-proxy-v2-ssl
       send-proxy-v2-ssl-cn ssl verify verifyhost
-    }
+    ]
     # Added in haproxy 1.6
-    SERVER_ATTRIBUTE_NAMES_1_6 = %w{
+    SERVER_ATTRIBUTE_NAMES_1_6 = %w[
       namespace no-ssl-reuse resolve-prefer resolvers sni tcp-ut
-    }
+    ]
     # Added in haproxy 1.7
-    SERVER_ATTRIBUTE_NAMES_1_7 = %w{
+    SERVER_ATTRIBUTE_NAMES_1_7 = %w[
       agent-send init-addr resolve-net
-    }
-    SERVER_ATTRIBUTE_NAMES_1_8 = %w{
+    ]
+    SERVER_ATTRIBUTE_NAMES_1_8 = %w[
       agent-addr check-sni enabled force-tlsv13 no-agent-check no-backup no-check no-check-ssl
       no-send-proxy no-send-proxy-v2 no-send-proxy-v2-ssl no-send-proxy-v2-ssl-cn no-ssl no-tlsv13
       no-verifyhost ssl-max-ver ssl-min-ver ssl-reuse stick tls-tickets
-    }
+    ]
     SERVER_ATTRIBUTE_NAMES_1_9 = %w[
       alpn check-alpn max-reuse npn pool-max-conn pool-purge-delay proto proxy-v2-options
     ].freeze
@@ -50,7 +51,7 @@ module HAProxy
 
     def initialize(options = nil)
       options ||= {}
-      options = { :verbose => false }.merge(options)
+      options = {verbose: false}.merge(options)
 
       self.options = options
       self.verbose = options[:verbose]
@@ -58,7 +59,7 @@ module HAProxy
 
     def parse_file(filename)
       config_text = File.read(filename)
-      self.parse(config_text)
+      parse(config_text)
     end
 
     def parse(config_text)
@@ -141,22 +142,18 @@ module HAProxy
       result.defaults.map { |ds| build_default(ds) }
     end
 
-
     def try_send(node, *method_names)
       method_name = method_names.shift
       if node.respond_to?(method_name)
         next_node = node.send(method_name)
         method_names.empty? ? next_node : try_send(next_node, *method_names)
-      else
-        nil
       end
     end
 
     def server_hash_from_config_section(cs)
-      cs.servers.inject({}) do |ch, s|
+      cs.servers.each_with_object({}) do |s, ch|
         value = try_send(s, :value, :content)
         ch[s.name] = Server.new(s.name, s.host, s.port, parse_server_attributes(value))
-        ch
       end
     end
 
@@ -171,46 +168,42 @@ module HAProxy
     def parse_server_attributes(value)
       parts = value.to_s.split(/\s/)
       current_name = nil
-      pairs = parts.inject({}) do |pairs, part|
+      pairs = parts.each_with_object({}) { |part, pairs|
         if SERVER_ATTRIBUTE_NAMES.include?(part)
-          current_name  = part
+          current_name = part
           pairs[current_name] = []
         elsif current_name.nil?
           raise "Invalid server attribute: #{part}"
         else
           pairs[current_name] << part
         end
-        pairs
-      end
+      }
 
-      return clean_parsed_server_attributes(pairs)
+      clean_parsed_server_attributes(pairs)
     end
 
     # Converts attributes with no values to true, and combines everything else into space-
     # separated strings.
     def clean_parsed_server_attributes(pairs)
-      pairs.each do |k,v|
-        if v.empty?
-          pairs[k] = true
+      pairs.each do |k, v|
+        pairs[k] = if v.empty?
+          true
         else
-          pairs[k] = v.join(' ')
+          v.join(" ")
         end
       end
     end
 
     def options_hash_from_config_section(cs)
-      cs.option_lines.inject({}) do |ch, l|
+      cs.option_lines.each_with_object({}) do |l, ch|
         ch[l.keyword.content] = l.value ? l.value.content : nil
-        ch
       end
     end
 
     def config_hash_from_config_section(cs)
-      cs.config_lines.reject{|l| l.keyword.content == 'option'}.inject({}) do |ch, l|
+      cs.config_lines.reject {|l| l.keyword.content == "option"}.each_with_object({}) do |l, ch|
         ch[l.keyword.content] = l.value ? l.value.content : nil
-        ch
       end
     end
-
   end
 end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
-require 'spec_helper'
+
+require "spec_helper"
 
 describe HAProxy::Treetop::ConfigParser do
   before(:each) do
@@ -17,11 +18,11 @@ describe HAProxy::Treetop::ConfigParser do
   end
 
   def parse_single_pool
-    parse_file('spec/fixtures/simple.haproxy.cfg')
+    parse_file("spec/fixtures/simple.haproxy.cfg")
   end
 
   def parse_multi_pool
-    parse_file('spec/fixtures/multi-pool.haproxy.cfg')
+    parse_file("spec/fixtures/multi-pool.haproxy.cfg")
   end
 
   it "can parse servers from a backend server block" do
@@ -29,28 +30,28 @@ describe HAProxy::Treetop::ConfigParser do
 
     backend = @result.backends.first
     backend.servers.size.should == 4
-    backend.servers[0].name.should == 'prd_www_1'
-    backend.servers[0].host.should == '10.214.78.95'
-    backend.servers[0].port.should == '8000'
+    backend.servers[0].name.should == "prd_www_1"
+    backend.servers[0].host.should == "10.214.78.95"
+    backend.servers[0].port.should == "8000"
   end
 
-  it 'can parse a service address from a frontend header' do
+  it "can parse a service address from a frontend header" do
     parse_multi_pool
 
     frontend = @result.frontends.first
-    frontend.frontend_header.service_address.host.content.should == '*'
-    frontend.frontend_header.service_address.port.content.should == '85'
+    frontend.frontend_header.service_address.host.content.should == "*"
+    frontend.frontend_header.service_address.port.content.should == "85"
   end
 
-  it 'can parse a service address from a listen header' do
+  it "can parse a service address from a listen header" do
     parse_single_pool
 
     listener = @result.listeners.first
-    listener.listen_header.service_address.host.content.should == '55.55.55.55'
-    listener.listen_header.service_address.port.content.should == '80'
+    listener.listen_header.service_address.host.content.should == "55.55.55.55"
+    listener.listen_header.service_address.port.content.should == "80"
   end
 
-  it 'can parse a file with a listen section' do
+  it "can parse a file with a listen section" do
     parse_single_pool
 
     @result.elements
@@ -70,7 +71,7 @@ describe HAProxy::Treetop::ConfigParser do
     @result.elements[4].class.should == HAProxy::Treetop::ListenSection
   end
 
-  it 'can parse a file with frontend/backend sections' do
+  it "can parse a file with frontend/backend sections" do
     parse_multi_pool
 
     @result.class.should == HAProxy::Treetop::ConfigurationFile
@@ -91,10 +92,9 @@ describe HAProxy::Treetop::ConfigParser do
     @result.elements[4].class.should == HAProxy::Treetop::BackendSection
   end
 
-  it 'can parse userlist sections'
-  it 'can parse valid units of time'
-  it 'can parse strings with escaped spaces'
-  it 'can parse files with escaped quotes'
-  it 'can parse keywords with hyphens'
+  it "can parse userlist sections"
+  it "can parse valid units of time"
+  it "can parse strings with escaped spaces"
+  it "can parse files with escaped quotes"
+  it "can parse keywords with hyphens"
 end
-

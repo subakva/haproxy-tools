@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module HAProxy
   Default   = Struct.new(:name, :options, :config)
   Backend   = Struct.new(:name, :options, :config, :servers)
@@ -17,11 +18,10 @@ module HAProxy
       new_server.host       = host
       new_server.port       = options[:port] if options[:port]
       new_server.attributes ||= options[:attributes] || {}
-      self.servers[name] = new_server
+      servers[name] = new_server
       new_server
     end
   end
-
 
   # Represents a listener configuration block.
   class Listener
@@ -47,23 +47,23 @@ module HAProxy
     end
 
     def listener(name)
-      self.listeners.find { |l| l.name == name }
+      listeners.find { |l| l.name == name }
     end
 
     def backend(name)
-      self.backends.find { |b| b.name == name }
+      backends.find { |b| b.name == name }
     end
 
     def frontend(name)
-      self.frontends.find { |f| f.name == name }
+      frontends.find { |f| f.name == name }
     end
 
-    def default(name=nil)
-      self.defaults.find { |d| d.name == name }
+    def default(name = nil)
+      defaults.find { |d| d.name == name }
     end
 
     def render
-      renderer = HAProxy::Renderer.new(self, self.original_parse_tree)
+      renderer = HAProxy::Renderer.new(self, original_parse_tree)
       renderer.render
     end
 
@@ -76,4 +76,3 @@ module HAProxy
     end
   end
 end
-

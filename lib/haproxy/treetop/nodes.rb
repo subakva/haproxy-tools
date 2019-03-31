@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module HAProxy
   module Treetop
     extend self
@@ -6,53 +7,53 @@ module HAProxy
     # Include this module to always strip whitespace from the text_value
     module StrippedTextContent
       def content
-        self.text_value.strip
+        text_value.strip
       end
     end
 
     # Include this module if the node contains a config element.
     module ConfigBlockContainer
       def option_lines
-        self.config_block.elements.select {|e| e.class == OptionLine}
+        config_block.elements.select {|e| e.class == OptionLine}
       end
 
       def config_lines
-        self.config_block.elements.select {|e| e.class == ConfigLine}
+        config_block.elements.select {|e| e.class == ConfigLine}
       end
     end
 
     # Include this module if the node contains a service address element.
     module ServiceAddressContainer
       def service_address
-        self.elements.find {|e| e.class == ServiceAddress }
+        elements.find {|e| e.class == ServiceAddress }
       end
 
       def host
-        self.service_address.host.text_value.strip
+        service_address.host.text_value.strip
       end
 
       def port
-        self.service_address.port.text_value.strip
+        service_address.port.text_value.strip
       end
     end
 
     # Include this module if the node contains a server elements.
     module ServerContainer
       def servers
-        self.config_block.elements.select {|e| e.class == ServerLine}
+        config_block.elements.select {|e| e.class == ServerLine}
       end
     end
 
     # Include this module if the value is optional for the node.
     module OptionalValueElement
       def value
-        self.elements.find {|e| e.class == Value}
+        elements.find {|e| e.class == Value}
       end
     end
 
     class Whitespace < ::Treetop::Runtime::SyntaxNode
       def content
-        self.text_value
+        text_value
       end
     end
 
@@ -108,13 +109,12 @@ module HAProxy
       include OptionalValueElement
 
       def key
-        self.keyword.content
+        keyword.content
       end
 
       def attribute
-        self.value.content
+        value.content
       end
-
     end
 
     class OptionLine < ::Treetop::Runtime::SyntaxNode
@@ -128,7 +128,7 @@ module HAProxy
       include OptionalValueElement
 
       def name
-        self.server_name.content
+        server_name.content
       end
     end
 
@@ -139,7 +139,7 @@ module HAProxy
     class DefaultsHeader < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       def proxy_name
-        self.elements.select {|e| e.class == ProxyName}.first
+        elements.select {|e| e.class == ProxyName}.first
       end
     end
 
@@ -190,39 +190,41 @@ module HAProxy
 
     class ConfigurationFile < ::Treetop::Runtime::SyntaxNode
       def global
-        self.elements.select {|e| e.class == GlobalSection}.first
+        elements.select {|e| e.class == GlobalSection}.first
       end
 
       def defaults
-        self.elements.select {|e| e.class == DefaultsSection}
+        elements.select {|e| e.class == DefaultsSection}
       end
 
       def listeners
-        self.elements.select {|e| e.class == ListenSection}
+        elements.select {|e| e.class == ListenSection}
       end
 
       def frontends
-        self.elements.select {|e| e.class == FrontendSection}
+        elements.select {|e| e.class == FrontendSection}
       end
 
       def backends
-        self.elements.select {|e| e.class == BackendSection}
+        elements.select {|e| e.class == BackendSection}
       end
     end
 
     def print_node(e, depth, options = nil)
       options ||= {}
-      options = {:max_depth => 2}.merge(options)
+      options = {max_depth: 2}.merge(options)
 
       puts if depth == 0
       print "--" * depth
-      print " #{e.class.name.split('::').last}"
+      print " #{e.class.name.split("::").last}"
       print " [#{e.text_value}]" if e.class == ::Treetop::Runtime::SyntaxNode
       print " [#{e.content}]" if e.respond_to? :content
       puts
-      e.elements.each do |child|
-        print_node(child, depth + 1, options)
-      end if depth < options[:max_depth] && e.elements && !e.respond_to?(:content)
+      if depth < options[:max_depth] && e.elements && !e.respond_to?(:content)
+        e.elements.each do |child|
+          print_node(child, depth + 1, options)
+        end
+      end
     end
   end
 end
