@@ -4,7 +4,7 @@
                          ----------------------
                               version 1.8
                              willy tarreau
-                              2017/12/30
+                              2019/02/11
 
 
 This document covers the configuration language as implemented in the version
@@ -580,8 +580,10 @@ The following keywords are supported in the "global" section :
    - setenv
    - stats
    - ssl-default-bind-ciphers
+   - ssl-default-bind-ciphersuites
    - ssl-default-bind-options
    - ssl-default-server-ciphers
+   - ssl-default-server-ciphersuites
    - ssl-default-server-options
    - ssl-dh-param-file
    - ssl-server-verify
@@ -818,7 +820,7 @@ group <group name>
   See also "gid" and "user".
 
 log <address> [len <length>] [format <format>] <facility> [max level [min level]]
-  Adds a global syslog server. Up to two global servers can be defined. They
+  Adds a global syslog server. Several global servers can be defined. They
   will receive logs for starts and exits, as well as all logs from proxies
   configured with "log global".
 
@@ -915,14 +917,14 @@ nbproc <number>
   mode. By default, only one process is created, which is the recommended mode
   of operation. For systems limited to small sets of file descriptors per
   process, it may be needed to fork multiple daemons. USING MULTIPLE PROCESSES
-  IS HARDER TO DEBUG AND IS REALLY DISCOURAGED. See also "daemon".
+  IS HARDER TO DEBUG AND IS REALLY DISCOURAGED. See also "daemon" and
+  "nbthread".
 
 nbthread <number>
   This setting is only available when support for threads was built in. It
   creates <number> threads for each created processes. It means if HAProxy is
   started in foreground, it only creates <number> threads for the first
-  process. FOR NOW, THREADS SUPPORT IN HAPROXY IS HIGHLY EXPERIMENTAL AND IT
-  MUST BE ENABLED WITH CAUTION AND AT YOUR OWN RISK. See also "nbproc".
+  process. See also "nbproc".
 
 pidfile <pidfile>
   Writes PIDs of all daemons into file <pidfile>. This option is equivalent to
@@ -984,11 +986,25 @@ setenv <name> <value>
 ssl-default-bind-ciphers <ciphers>
   This setting is only available when support for OpenSSL was built in. It sets
   the default string describing the list of cipher algorithms ("cipher suite")
-  that are negotiated during the SSL/TLS handshake for all "bind" lines which
-  do not explicitly define theirs. The format of the string is defined in
-  "man 1 ciphers" from OpenSSL man pages, and can be for instance a string such
-  as "AES:ALL:!aNULL:!eNULL:+RC4:@STRENGTH" (without quotes). Please check the
-  "bind" keyword for more information.
+  that are negotiated during the SSL/TLS handshake up to TLSv1.2 for all
+  "bind" lines which do not explicitly define theirs. The format of the string
+  is defined in "man 1 ciphers" from OpenSSL man pages. For background
+  information and recommendations see e.g.
+  (https://wiki.mozilla.org/Security/Server_Side_TLS) and
+  (https://mozilla.github.io/server-side-tls/ssl-config-generator/). For TLSv1.3
+  cipher configuration, please check the "ssl-default-bind-ciphersuites" keyword.
+  Please check the "bind" keyword for more information.
+
+ssl-default-bind-ciphersuites <ciphersuites>
+  This setting is only available when support for OpenSSL was built in and
+  OpenSSL 1.1.1 or later was used to build HAProxy. It sets the default string
+  describing the list of cipher algorithms ("cipher suite") that are negotiated
+  during the TLSv1.3 handshake for all "bind" lines which do not explicitly define
+  theirs. The format of the string is defined in
+  "man 1 ciphers" from OpenSSL man pages under the section "ciphersuites". For
+  cipher configuration for TLSv1.2 and earlier, please check the
+  "ssl-default-bind-ciphers" keyword. Please check the "bind" keyword for more
+  information.
 
 ssl-default-bind-options [<option>]...
   This setting is only available when support for OpenSSL was built in. It sets
@@ -1002,10 +1018,26 @@ ssl-default-bind-options [<option>]...
 ssl-default-server-ciphers <ciphers>
   This setting is only available when support for OpenSSL was built in. It
   sets the default string describing the list of cipher algorithms that are
-  negotiated during the SSL/TLS handshake with the server, for all "server"
-  lines which do not explicitly define theirs. The format of the string is
-  defined in "man 1 ciphers". Please check the "server" keyword for more
-  information.
+  negotiated during the SSL/TLS handshake up to TLSv1.2 with the server,
+  for all "server" lines which do not explicitly define theirs. The format of
+  the string is defined in "man 1 ciphers" from OpenSSL man pages. For background
+  information and recommendations see e.g.
+  (https://wiki.mozilla.org/Security/Server_Side_TLS) and
+  (https://mozilla.github.io/server-side-tls/ssl-config-generator/).
+  For TLSv1.3 cipher configuration, please check the
+  "ssl-default-server-ciphersuites" keyword. Please check the "server" keyword
+  for more information.
+
+ssl-default-server-ciphersuites <ciphersuites>
+  This setting is only available when support for OpenSSL was built in and
+  OpenSSL 1.1.1 or later was used to build HAProxy. It sets the default
+  string describing the list of cipher algorithms that are negotiated during
+  the TLSv1.3 handshake with the server, for all "server" lines which do not
+  explicitly define theirs. The format of the string is defined in
+  "man 1 ciphers" from OpenSSL man pages under the section "ciphersuites". For
+  cipher configuration for TLSv1.2 and earlier, please check the
+  "ssl-default-server-ciphers" keyword. Please check the "server" keyword for
+  more information.
 
 ssl-default-server-options [<option>]...
   This setting is only available when support for OpenSSL was built in. It sets
@@ -1651,7 +1683,7 @@ tune.ssl.cachesize <number>
   this value to 0 disables the SSL session cache.
 
 tune.ssl.force-private-cache
-  This boolean disables SSL session cache sharing between all processes. It
+  This option disables SSL session cache sharing between all processes. It
   should normally not be used since it will force many renegotiations due to
   clients hitting a random process. But it may be required on some operating
   systems where none of the SSL cache synchronization method may be used. In
@@ -2039,7 +2071,7 @@ errorloc                                  X          X         X         X
 errorloc302                               X          X         X         X
 -- keyword -------------------------- defaults - frontend - listen -- backend -
 errorloc303                               X          X         X         X
-force-persist                             -          X         X         X
+force-persist                             -          -         X         X
 filter                                    -          X         X         X
 fullconn                                  X          -         X         X
 grace                                     X          X         X         X
@@ -2052,7 +2084,7 @@ http-response                             -          X         X         X
 http-reuse                                X          -         X         X
 http-send-name-header                     -          -         X         X
 id                                        -          X         X         X
-ignore-persist                            -          X         X         X
+ignore-persist                            -          -         X         X
 load-server-state-from-file               X          -         X         X
 log                                  (*)  X          X         X         X
 log-format                                X          X         X         -
@@ -2470,6 +2502,11 @@ balance url_param <param> [check_post]
   The load balancing algorithm of a backend is set to roundrobin when no other
   algorithm, mode nor option have been set. The algorithm may only be set once
   for each backend.
+
+  With authentication schemes that require the same connection like NTLM, URI
+  based alghoritms must not be used, as they would cause subsequent requests
+  to be routed to different backend servers, breaking the invalid assumptions
+  NTLM relies on.
 
   Examples :
         balance roundrobin
@@ -3503,7 +3540,7 @@ email-alert to <emailaddr>
 force-persist { if | unless } <condition>
   Declare a condition to force persistence on down servers
   May be used in sections:    defaults | frontend | listen | backend
-                                  no   |    yes   |   yes  |   yes
+                                  no   |    no    |   yes  |   yes
 
   By default, requests are not dispatched to down servers. It is possible to
   force this using "option persist", but it is unconditional and redispatches
@@ -4146,9 +4183,11 @@ http-request { allow | auth [realm <realm>] | redirect <rule> | reject |
 
     - { track-sc0 | track-sc1 | track-sc2 } <key> [table <table>] :
       enables tracking of sticky counters from current request. These rules
-      do not stop evaluation and do not change default action. Three sets of
-      counters may be simultaneously tracked by the same connection. The first
-      "track-sc0" rule executed enables tracking of the counters of the
+      do not stop evaluation and do not change default action. The number of
+      counters that may be simultaneously tracked by the same connection is set
+      in MAX_SESS_STKCTR at build time (reported in haproxy -vv) which defaults
+      to 3, so the track-sc number is between 0 and (MAX_SESS_STCKTR-1). The
+      first "track-sc0" rule executed enables tracking of the counters of the
       specified table as the first set. The first "track-sc1" rule executed
       enables tracking of the counters of the specified table as the second
       set. The first "track-sc2" rule executed enables tracking of the
@@ -4771,10 +4810,8 @@ http-reuse { never | safe | aggressive | always }
     - connections sent to a server with a TLS SNI extension are marked private
       and are never shared;
 
-    - connections receiving a status code 401 or 407 expect some authentication
-      to be sent in return. Due to certain bogus authentication schemes (such
-      as NTLM) relying on the connection, these connections are marked private
-      and are never shared;
+    - connections with certain bogus authentication schemes (relying on the
+      connection) like NTLM are detected, marked private and are never shared;
 
   No connection pool is involved, once a session dies, the last idle connection
   it was attached to is deleted at the same time. This ensures that connections
@@ -4817,7 +4854,7 @@ id <value>
 ignore-persist { if | unless } <condition>
   Declare a condition to ignore persistence
   May be used in sections:    defaults | frontend | listen | backend
-                                  no   |    yes   |   yes  |   yes
+                                  no   |    no    |   yes  |   yes
 
   By default, when cookie persistence is enabled, every requests containing
   the cookie are unconditionally persistent (assuming the target server is up
@@ -5759,9 +5796,6 @@ no option http-keep-alive
   available to try optimize server selection so that if the server currently
   attached to an idle connection is usable, it will be used.
 
-  In general it is preferred to use "option http-server-close" with application
-  servers, and some static servers might benefit from "option http-keep-alive".
-
   At the moment, logs will not indicate whether requests came from the same
   session or not. The accept date reported in the logs corresponds to the end
   of the previous request, and the request time corresponds to the time spent
@@ -6064,7 +6098,7 @@ no option httpclose
 option httplog [ clf ]
   Enable logging of HTTP request, session state and timers
   May be used in sections :   defaults | frontend | listen | backend
-                                 yes   |    yes   |   yes  |   yes
+                                 yes   |    yes   |   yes  |   no
   Arguments :
     clf       if the "clf" argument is added, then the output format will be
               the CLF format instead of HAProxy's default HTTP format. You can
@@ -6079,8 +6113,6 @@ option httplog [ clf ]
   status, the connections numbers, the captured headers and cookies, the
   frontend, backend and server name, and of course the source address and
   ports.
-
-  This option may be set either in the frontend or the backend.
 
   Specifying only "option httplog" will automatically clear the 'clf' mode
   if it was set by default.
@@ -6150,7 +6182,7 @@ no option independent-streams
   data sent to the server. Doing so will typically break large HTTP posts from
   slow lines, so use it with caution.
 
-  Note: older versions used to call this setting "option independent-streams"
+  Note: older versions used to call this setting "option independant-streams"
         with a spelling mistake. This spelling is still supported but
         deprecated.
 
@@ -6466,8 +6498,9 @@ no option prefer-last-server
   close of the connection. This can make sense for static file servers. It does
   not make much sense to use this in combination with hashing algorithms. Note,
   haproxy already automatically tries to stick to a server which sends a 401 or
-  to a proxy which sends a 407 (authentication required). This is mandatory for
-  use with the broken NTLM authentication challenge, and significantly helps in
+  to a proxy which sends a 407 (authentication required), when the load
+  balancing algorithm is not deterministic. This is mandatory for use with the
+  broken NTLM authentication challenge, and significantly helps in
   troubleshooting some faulty applications. Option prefer-last-server might be
   desirable in these environments as well, to avoid redistributing the traffic
   after every other response.
@@ -6500,8 +6533,8 @@ no option redispatch
   definitely stick to it because they cannot flush the cookie, so they will not
   be able to access the service anymore.
 
-  Specifying "option redispatch" will allow the proxy to break their
-  persistence and redistribute them to a working server.
+  Specifying "option redispatch" will allow the proxy to break cookie or
+  consistent hash based persistence and redistribute them to a working server.
 
   It also allows to retry connections to another server in case of multiple
   connection failures. Of course, it requires having "retries" set to a nonzero
@@ -6540,7 +6573,7 @@ option smtpchk <hello> <domain>
                                  yes   |    no    |   yes  |   yes
   Arguments :
     <hello>   is an optional argument. It is the "hello" command to use. It can
-              be either "HELO" (for SMTP) or "EHLO" (for ESTMP). All other
+              be either "HELO" (for SMTP) or "EHLO" (for ESMTP). All other
               values will be turned into the default command ("HELO").
 
     <domain>  is the domain name to present to the server. It may only be
@@ -6931,7 +6964,7 @@ option tcpka
 option tcplog
   Enable advanced logging of TCP connections with session state and timers
   May be used in sections :   defaults | frontend | listen | backend
-                                 yes   |    yes   |   yes  |   yes
+                                 yes   |    yes   |   yes  |   no
   Arguments : none
 
   By default, the log output format is very poor, as it only contains the
@@ -6942,8 +6975,6 @@ option tcplog
   address and ports. This option is useful for pure TCP proxies in order to
   find which of the client or server disconnects or times out. For normal HTTP
   proxies, it's better to use "option httplog" which is even more complete.
-
-  This option may be set either in the frontend or the backend.
 
   "option tcplog" overrides any previous "log-format" directive.
 
@@ -9208,16 +9239,18 @@ tcp-request connection <action> [{if | unless} <condition>]
 
     - { track-sc0 | track-sc1 | track-sc2 } <key> [table <table>] :
         enables tracking of sticky counters from current connection. These
-        rules do not stop evaluation and do not change default action. 3 sets
-        of counters may be simultaneously tracked by the same connection. The
-        first "track-sc0" rule executed enables tracking of the counters of the
-        specified table as the first set. The first "track-sc1" rule executed
-        enables tracking of the counters of the specified table as the second
-        set. The first "track-sc2" rule executed enables tracking of the
-        counters of the specified table as the third set. It is a recommended
-        practice to use the first set of counters for the per-frontend counters
-        and the second set for the per-backend ones. But this is just a
-        guideline, all may be used everywhere.
+        rules do not stop evaluation and do not change default action. The
+        number of counters that may be simultaneously tracked by the same
+        connection is set in MAX_SESS_STKCTR at build time (reported in
+        haproxy -vv) whichs defaults to 3, so the track-sc number is between 0
+        and (MAX_SESS_STCKTR-1). The first "track-sc0" rule executed enables
+        tracking of the counters of the specified table as the first set. The
+        first "track-sc1" rule executed enables tracking of the counters of the
+        specified table as the second set. The first "track-sc2" rule executed
+        enables tracking of the counters of the specified table as the third
+        set. It is a recommended practice to use the first set of counters for
+        the per-frontend counters and the second set for the per-backend ones.
+        But this is just a guideline, all may be used everywhere.
 
         These actions take one or two arguments :
           <key>   is mandatory, and is a sample expression rule as described
@@ -10454,8 +10487,11 @@ accept-proxy
   setting of which client is allowed to use the protocol.
 
 allow-0rtt
-  Allow receiving early data when using TLS 1.3. This is disabled by default,
-  due to security considerations.
+  Allow receiving early data when using TLSv1.3. This is disabled by default,
+  due to security considerations. Because it is vulnerable to replay attacks,
+  you should only allow if for requests that are safe to replay, ie requests
+  that are idempotent. You can use the "wait-for-handshake" action for any
+  request that wouldn't be safe with early data.
 
 alpn <protocols>
   This enables the TLS ALPN extension and advertises the specified protocol
@@ -10517,13 +10553,20 @@ ca-sign-pass <passphrase>
 ciphers <ciphers>
   This setting is only available when support for OpenSSL was built in. It sets
   the string describing the list of cipher algorithms ("cipher suite") that are
-  negotiated during the SSL/TLS handshake. The format of the string is defined
-  in "man 1 ciphers" from OpenSSL man pages, and can be for instance a string
-  such as "AES:ALL:!aNULL:!eNULL:+RC4:@STRENGTH" (without quotes).
-  Depending on the compatibility and security requirements, the list of suitable
-  ciphers depends on a variety of variables. For background information and
-  recommendations see e. g. (https://wiki.mozilla.org/Security/Server_Side_TLS)
-  and (https://mozilla.github.io/server-side-tls/ssl-config-generator/).
+  negotiated during the SSL/TLS handshake up to TLSv1.2. The format of the
+  string is defined in "man 1 ciphers" from OpenSSL man pages. For background
+  information and recommendations see e.g.
+  (https://wiki.mozilla.org/Security/Server_Side_TLS) and
+  (https://mozilla.github.io/server-side-tls/ssl-config-generator/). For TLSv1.3
+  cipher configuration, please check the "ciphersuites" keyword.
+
+ciphersuites <ciphersuites>
+  This setting is only available when support for OpenSSL was built in and
+  OpenSSL 1.1.1 or later was used to build HAProxy. It sets the string describing
+  the list of cipher algorithms ("cipher suite") that are negotiated during the
+  TLSv1.3 handshake. The format of the string is defined in "man 1 ciphers" from
+  OpenSSL man pages under the "ciphersuites" section. For cipher configuration
+  for TLSv1.2 and earlier, please check the "ciphers" keyword.
 
 crl-file <crlfile>
   This setting is only available when support for OpenSSL was built in. It
@@ -10768,7 +10811,12 @@ interface <interface>
   interface, not an aliased interface. It is also possible to bind multiple
   frontends to the same address if they are bound to different interfaces. Note
   that binding to a network interface requires root privileges. This parameter
-  is only compatible with TCPv4/TCPv6 sockets.
+  is only compatible with TCPv4/TCPv6 sockets. When specified, return traffic
+  uses the same interface as inbound traffic, and its associated routing table,
+  even if there are explicit routes through different interfaces configured.
+  This can prove useful to address asymmetric routing issues when the same
+  client IP addresses need to be able to reach frontends hosted on different
+  interfaces.
 
 level <level>
   This setting is used with the stats sockets only to restrict the nature of
@@ -11211,9 +11259,10 @@ check-send-proxy
   "check-send-proxy" option needs to be used to force the use of the
   protocol. See also the "send-proxy" option for more information.
 
-check-sni
+check-sni <sni>
   This option allows you to specify the SNI to be used when doing health checks
-  over SSL.
+  over SSL. It is only possible to use a string to set <sni>. If you want to
+  set a SNI for proxied traffic, see "sni".
 
 check-ssl
   This option forces encryption of all health checks over SSL, regardless of
@@ -11228,14 +11277,23 @@ check-ssl
   this option.
 
 ciphers <ciphers>
-  This option sets the string describing the list of cipher algorithms that is
-  is negotiated during the SSL/TLS handshake with the server. The format of the
-  string is defined in "man 1 ciphers". When SSL is used to communicate with
-  servers on the local network, it is common to see a weaker set of algorithms
-  than what is used over the internet. Doing so reduces CPU usage on both the
-  server and haproxy while still keeping it compatible with deployed software.
-  Some algorithms such as RC4-SHA1 are reasonably cheap. If no security at all
-  is needed and just connectivity, using DES can be appropriate.
+  This setting is only available when support for OpenSSL was built in. This
+  option sets the string describing the list of cipher algorithms that is
+  negotiated during the SSL/TLS handshake with the server. The format of the
+  string is defined in "man 1 ciphers" from OpenSSL man pages. For background
+  information and recommendations see e.g.
+  (https://wiki.mozilla.org/Security/Server_Side_TLS) and
+  (https://mozilla.github.io/server-side-tls/ssl-config-generator/). For TLSv1.3
+  cipher configuration, please check the "ciphersuites" keyword.
+
+ciphersuites <ciphersuites>
+  This setting is only available when support for OpenSSL was built in and
+  OpenSSL 1.1.1 or later was used to build HAProxy. This option sets the string
+  describing the list of cipher algorithms that is negotiated during the TLS
+  1.3 handshake with the server. The format of the string is defined in
+  "man 1 ciphers" from OpenSSL man pages under the "ciphersuites" section.
+  For cipher configuration for TLSv1.2 and earlier, please check the "ciphers"
+  keyword.
 
 cookie <value>
   The "cookie" parameter sets the cookie value assigned to the server to
@@ -11625,6 +11683,40 @@ rise <count>
   after <count> consecutive successful health checks. This value defaults to 2
   if unspecified. See also the "check", "inter" and "fall" parameters.
 
+resolve-opts <option>,<option>,...
+  Comma separated list of options to apply to DNS resolution linked to this
+  server.
+
+  Available options:
+
+  * allow-dup-ip
+    By default, HAProxy prevents IP address duplication in a backend when DNS
+    resolution at runtime is in operation.
+    That said, for some cases, it makes sense that two servers (in the same
+    backend, being resolved by the same FQDN) have the same IP address.
+    For such case, simply enable this option.
+    This is the opposite of prevent-dup-ip.
+
+  * prevent-dup-ip
+    Ensure HAProxy's default behavior is enforced on a server: prevent re-using
+    an IP address already set to a server in the same backend and sharing the
+    same fqdn.
+    This is the opposite of allow-dup-ip.
+
+  Example:
+    backend b_myapp
+      default-server init-addr none resolvers dns
+      server s1 myapp.example.com:80 check resolve-opts allow-dup-ip
+      server s2 myapp.example.com:81 check resolve-opts allow-dup-ip
+
+  With the option allow-dup-ip set:
+  * if the nameserver returns a single IP address, then both servers will use
+    it
+  * If the nameserver returns 2 IP addresses, then each server will pick up a
+    different address
+
+  Default value: not set
+
 resolve-prefer <family>
   When DNS resolution is enabled for a server and multiple IP addresses from
   different families are returned, HAProxy will prefer using an IP address
@@ -11738,7 +11830,8 @@ sni <expression>
   expression, though alternatives such as req.hdr(host) can also make sense. If
   "verify required" is set (which is the recommended setting), the resulting
   name will also be matched against the server certificate's names. See the
-  "verify" directive for more details.
+  "verify" directive for more details. If you want to set a SNI for health
+  checks, see the "check-sni" directive for more details.
 
 source <addr>[:<pl>[-<ph>]] [usesrc { <addr2>[:<port2>] | client | clientip } ]
 source <addr>[:<port>] [usesrc { <addr2>[:<port2>] | hdr_ip(<hdr>[,<occ>]) } ]
@@ -11967,9 +12060,6 @@ accepted_payload_size <nb>
   name servers configured in this resolvers section.
   <nb> is in bytes. If not set, HAProxy announces 512. (minimal value defined
        by RFC 6891)
-
-  Note: to get bigger responses but still be sure that responses won't be
-        dropped on the wire, one can choose a value between 1280 and 1410.
 
   Note: the maximum allowed value is 8192.
 
@@ -13711,10 +13801,13 @@ sets unless they require some future information. Those generally include
 TCP/IP addresses and ports, as well as elements from stick-tables related to
 the incoming connection. For retrieving a value from a sticky counters, the
 counter number can be explicitly set as 0, 1, or 2 using the pre-defined
-"sc0_", "sc1_", or "sc2_" prefix, or it can be specified as the first integer
-argument when using the "sc_" prefix. An optional table may be specified with
-the "sc*" form, in which case the currently tracked key will be looked up into
-this alternate table instead of the table currently being tracked.
+"sc0_", "sc1_", or "sc2_" prefix. These three pre-defined prefixes can only be
+used if MAX_SESS_STKCTR value does not exceed 3, otherwise the counter number
+can be specified as the first integer argument when using the "sc_" prefix.
+Starting from "sc_0" to "sc_N" where N is (MAX_SESS_STKCTR-1). An optional
+table may be specified with the "sc*" form, in which case the currently
+tracked key will be looked up into this alternate table instead of the table
+currently being tracked.
 
 be_id : integer
   Returns an integer containing the current backend's id. It can be used in
@@ -13729,7 +13822,12 @@ dst : ip
   which is the address the client connected to. It can be useful when running
   in transparent mode. It is of type IP and works on both IPv4 and IPv6 tables.
   On IPv6 tables, IPv4 address is mapped to its IPv6 equivalent, according to
-  RFC 4291.
+  RFC 4291. When the incoming connection passed through address translation or
+  redirection involving connection tracking, the original destination address
+  before the redirection will be reported. On Linux systems, the source and
+  destination may seldom appear reversed if the nf_conntrack_tcp_loose sysctl
+  is set, because a late response may reopen a timed out connection and switch
+  what is believed to be the source and the destination.
 
 dst_conn : integer
   Returns an integer value corresponding to the number of currently established
@@ -14034,7 +14132,13 @@ src : ip
   behind a proxy. However if the "accept-proxy" or "accept-netscaler-cip" bind
   directive is used, it can be the address of a client behind another
   PROXY-protocol compatible component for all rule sets except
-  "tcp-request connection" which sees the real address.
+  "tcp-request connection" which sees the real address. When the incoming
+  connection passed through address translation or redirection involving
+  connection tracking, the original destination address before the redirection
+  will be reported. On Linux systems, the source and destination may seldom
+  appear reversed if the nf_conntrack_tcp_loose sysctl is set, because a late
+  response may reopen a timed out connection and switch what is believed to be
+  the source and the destination.
 
   Example:
        # add an HTTP header in requests with the originating address' country
@@ -14503,7 +14607,8 @@ ssl_fc_has_sni : boolean
 
 ssl_fc_is_resumed : boolean
   Returns true if the SSL/TLS session has been resumed through the use of
-  SSL session cache or TLS tickets.
+  SSL session cache or TLS tickets on an incoming connection over an SSL/TLS
+  transport layer.
 
 ssl_fc_npn : string
   This extracts the Next Protocol Negotiation field from an incoming connection
@@ -15576,7 +15681,10 @@ Detailed fields description :
   - "accept_date" is the exact date when the connection was received by haproxy
     (which might be very slightly different from the date observed on the
     network if there was some queuing in the system's backlog). This is usually
-    the same date which may appear in any upstream firewall's log.
+    the same date which may appear in any upstream firewall's log. When used in
+    HTTP mode, the accept_date field will be reset to the first moment the
+    connection is ready to receive a new request (end of previous response for
+    HTTP/1, immediately after previous request for HTTP/2).
 
   - "frontend_name" is the name of the frontend (or listener) which received
     and processed the connection.
@@ -15776,24 +15884,25 @@ Detailed fields description :
     request could be received or the a bad request was received. It should
     always be very small because a request generally fits in one single packet.
     Large times here generally indicate network issues between the client and
-    haproxy or requests being typed by hand. See "Timers" below for more details.
+    haproxy or requests being typed by hand. See section 8.4 "Timing Events"
+    for more details.
 
   - "Tw" is the total time in milliseconds spent waiting in the various queues.
     It can be "-1" if the connection was aborted before reaching the queue.
-    See "Timers" below for more details.
+    See section 8.4 "Timing Events" for more details.
 
   - "Tc" is the total time in milliseconds spent waiting for the connection to
     establish to the final server, including retries. It can be "-1" if the
-    request was aborted before a connection could be established. See "Timers"
-    below for more details.
+    request was aborted before a connection could be established. See section
+    8.4 "Timing Events" for more details.
 
   - "Tr" is the total time in milliseconds spent waiting for the server to send
     a full HTTP response, not counting data. It can be "-1" if the request was
     aborted before a complete response could be received. It generally matches
     the server's processing time for the request, though it may be altered by
     the amount of data sent by the client to the server. Large times here on
-    "GET" requests generally indicate an overloaded server. See "Timers" below
-    for more details.
+    "GET" requests generally indicate an overloaded server. See section 8.4
+    "Timing Events" for more details.
 
   - "Ta" is the time the request remained active in haproxy, which is the total
     time in milliseconds elapsed between the first byte of the request was
@@ -15802,7 +15911,7 @@ Detailed fields description :
     one exception, if "option logasap" was specified, then the time counting
     stops at the moment the log is emitted. In this case, a '+' sign is
     prepended before the value, indicating that the final one will be larger.
-    See "Timers" below for more details.
+    See section 8.4 "Timing Events" for more details.
 
   - "status_code" is the HTTP status code returned to the client. This status
     is generally set by the server, but it might also be set by haproxy when
@@ -16059,7 +16168,7 @@ Please refer to the table below for currently defined variables :
   |   | %t   | date_time      (with millisecond resolution)  | date        |
   | H | %tr  | date_time of HTTP request                     | date        |
   | H | %trg | gmt_date_time of start of HTTP request        | date        |
-  | H | %trl | locla_date_time of start of HTTP request      | date        |
+  | H | %trl | local_date_time of start of HTTP request      | date        |
   |   | %ts  | termination_state                             | string      |
   | H | %tsc | termination_state with cookie status          | string      |
   +---+------+-----------------------------------------------+-------------+
@@ -16208,16 +16317,20 @@ Timings events in TCP mode:
     may indicate that the client only pre-established the connection without
     speaking, that it is experiencing network issues preventing it from
     completing a handshake in a reasonable time (e.g. MTU issues), or that an
-    SSL handshake was very expensive to compute.
+    SSL handshake was very expensive to compute. Please note that this time is
+    reported only before the first request, so it is safe to average it over
+    all request to calculate the amortized value. The second and subsequent
+    request will always report zero here.
 
   - Ti: is the idle time before the HTTP request (HTTP mode only). This timer
     counts between the end of the handshakes and the first byte of the HTTP
     request. When dealing with a second request in keep-alive mode, it starts
-    to count after the end of the transmission the previous response. Some
-    browsers pre-establish connections to a server in order to reduce the
-    latency of a future request, and keep them pending until they need it. This
-    delay will be reported as the idle time. A value of -1 indicates that
-    nothing was received on the connection.
+    to count after the end of the transmission the previous response. When a
+    multiplexed protocol such as HTTP/2 is used, it starts to count immediately
+    after the previous request. Some browsers pre-establish connections to a
+    server in order to reduce the latency of a future request, and keep them
+    pending until they need it. This delay will be reported as the idle time. A
+    value of -1 indicates that nothing was received on the connection.
 
   - TR: total time to get the client request (HTTP mode only). It's the time
     elapsed between the first bytes received and the moment the proxy received
@@ -17025,6 +17138,7 @@ The cache won't store and won't deliver objects in these cases:
 
 - If the request is not a GET
 - If the HTTP version of the request is smaller than 1.1
+- If the request contains an Authorization header
 
 Caution!: Due to the current limitation of the filters, it is not recommended
 to use the cache with other filters. Using them can cause undefined behavior
@@ -17045,7 +17159,7 @@ cache <name>
 
 total-max-size <megabytes>
   Define the size in RAM of the cache in megabytes. This size is split in
-  blocks of 1kB which are used by the cache entries.
+  blocks of 1kB which are used by the cache entries. Its maximum value is 4095.
 
 max-age <seconds>
   Define the maximum expiration duration. The expiration is set has the lowest
@@ -17057,13 +17171,13 @@ max-age <seconds>
 10.2.2. Proxy section
 ---------------------
 
-http-request cache-use <name>
+http-request cache-use <name> [ { if | unless } <condition> ]
   Try to deliver a cached object from the cache <name>. This directive is also
   mandatory to store the cache as it calculates the cache hash. If you want to
   use a condition for both storage and delivering that's a good idea to put it
   after this one.
 
-http-response cache-store <name>
+http-response cache-store <name> [ { if | unless } <condition> ]
   Store an http-response within the cache. The storage of the response headers
   is done at this step, which means you can use others http-response actions
   to modify headers before or after the storage of the response. This action
