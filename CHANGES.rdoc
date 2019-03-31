@@ -1,3 +1,10 @@
+== 0.6.0
+* [#19] Allow underscores in keywords (@cocker-cc)
+* Removed support for ruby versions older than 2.2
+* Fixes rendering of configs that have no value
+* Added standardrb linting
+* Switched to new style rspec syntax
+
 == 0.5.0
 * [#16] Updated Readme (@chriswessells)
 * [#14] Adds Server Attributes for More Versions (@chriswessells)

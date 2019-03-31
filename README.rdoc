@@ -56,5 +56,4 @@ Tools for managing HAProxy with Ruby.
 
 == Copyright
 
-Copyright (c) 2011-2018 Jason Wadsworth. See LICENSE.txt for further details.
-
+Copyright (c) 2011-2019 Jason Wadsworth. See LICENSE.txt for further details.
