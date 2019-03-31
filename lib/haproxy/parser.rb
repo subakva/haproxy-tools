@@ -79,8 +79,7 @@ module HAProxy
 
     def build_config(result)
       HAProxy::Config.new(result).tap do |config|
-        config.global = config_hash_from_config_section(result.global)
-
+        config.global = config_hash_from_config_section(result.global) if result.global
         config.frontends  += collect_frontends(result)
         config.backends   += collect_backends(result)
         config.listeners  += collect_listeners(result)
