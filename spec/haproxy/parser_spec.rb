@@ -10,56 +10,56 @@ describe "HAProxy::Parser" do
     end
 
     it "parses default_backend" do
-      @config.frontends.size.should == 1
+      expect(@config.frontends.size).to eq(1)
       www_frontend = @config.frontend("www")
-      www_frontend.config["default_backend"].should == "www_main"
+      expect(www_frontend.config["default_backend"]).to eq("www_main")
     end
 
     it "parses defaults" do
-      @config.defaults.size.should == 1
+      expect(@config.defaults.size).to eq(1)
 
       defaults = @config.defaults.first
-      defaults.config["log"].should == "global"
-      defaults.config["mode"].should == "http"
-      defaults.config["retries"].should == "3"
-      defaults.config["redispatch"].should.nil?
-      defaults.config["maxconn"].should == "10000"
-      defaults.config["contimeout"].should == "5000"
-      defaults.config["clitimeout"].should == "60000"
-      defaults.config["srvtimeout"].should == "60000"
-      defaults.config["stats"].should == "uri /haproxy-status"
-      defaults.config["cookie"].should == "SERVERID insert indirect nocache"
+      expect(defaults.config["log"]).to eq("global")
+      expect(defaults.config["mode"]).to eq("http")
+      expect(defaults.config["retries"]).to eq("3")
+      expect(defaults.config["redispatch"]).to be_nil
+      expect(defaults.config["maxconn"]).to eq("10000")
+      expect(defaults.config["contimeout"]).to eq("5000")
+      expect(defaults.config["clitimeout"]).to eq("60000")
+      expect(defaults.config["srvtimeout"]).to eq("60000")
+      expect(defaults.config["stats"]).to eq("uri /haproxy-status")
+      expect(defaults.config["cookie"]).to eq("SERVERID insert indirect nocache")
 
-      defaults.options.size.should == 2
-      defaults.options.should include("httplog")
-      defaults.options.should include("dontlognull")
+      expect(defaults.options.size).to eq(2)
+      expect(defaults.options).to include("httplog")
+      expect(defaults.options).to include("dontlognull")
     end
 
     it "parses a named backend from a config file" do
-      @config.backends.size.should == 2
+      expect(@config.backends.size).to eq(2)
       logs_backend = @config.backend("logs")
 
-      logs_backend.servers.size.should == 4
+      expect(logs_backend.servers.size).to eq(4)
 
       server1 = logs_backend.servers["prd_log_1"]
-      server1.name.should == "prd_log_1"
-      server1.host.should == "10.245.174.75"
-      server1.port.should == "8000"
+      expect(server1.name).to eq("prd_log_1")
+      expect(server1.host).to eq("10.245.174.75")
+      expect(server1.port).to eq("8000")
 
       server2 = logs_backend.servers["fake_logger"]
-      server2.name.should == "fake_logger"
-      server2.host.should == "127.0.0.1"
-      server2.port.should == "9999"
+      expect(server2.name).to eq("fake_logger")
+      expect(server2.host).to eq("127.0.0.1")
+      expect(server2.port).to eq("9999")
 
       server3 = logs_backend.servers["prd_log_2"]
-      server3.name.should == "prd_log_2"
-      server3.host.should == "10.215.157.10"
-      server3.port.should == "8000"
+      expect(server3.name).to eq("prd_log_2")
+      expect(server3.host).to eq("10.215.157.10")
+      expect(server3.port).to eq("8000")
 
       server3 = logs_backend.servers["prd_log_3"]
-      server3.name.should == "prd_log_3"
-      server3.host.should == "cloudloghost1"
-      server3.port.should == "8000"
+      expect(server3.name).to eq("prd_log_3")
+      expect(server3.host).to eq("cloudloghost1")
+      expect(server3.port).to eq("8000")
     end
   end
 
@@ -72,12 +72,12 @@ describe "HAProxy::Parser" do
     it "parses structured configs" do
       defaults = @config.defaults.first.config
 
-      defaults["timeout connect"].should == "5000ms"
-      defaults["timeout client"].should == "5000ms"
-      defaults["timeout server"].should == "5000ms"
+      expect(defaults["timeout connect"]).to eq("5000ms")
+      expect(defaults["timeout client"]).to eq("5000ms")
+      expect(defaults["timeout server"]).to eq("5000ms")
 
-      defaults["errorfile 400"].should == "/etc/haproxy/errors/400.http"
-      defaults["errorfile 504"].should == "/etc/haproxy/errors/504.http"
+      expect(defaults["errorfile 400"]).to eq("/etc/haproxy/errors/400.http")
+      expect(defaults["errorfile 504"]).to eq("/etc/haproxy/errors/504.http")
     end
   end
 
@@ -88,61 +88,61 @@ describe "HAProxy::Parser" do
     end
 
     it "parses global variables from a config file" do
-      @config.global.size.should == 3
-      @config.global["maxconn"].should == "4096"
-      @config.global["daemon"].should.nil?
-      @config.global["nbproc"].should == "4"
+      expect(@config.global.size).to eq(3)
+      expect(@config.global["maxconn"]).to eq("4096")
+      expect(@config.global["daemon"]).to be_nil
+      expect(@config.global["nbproc"]).to eq("4")
     end
 
     it "parses a default set from a config file" do
-      @config.defaults.size.should == 1
+      expect(@config.defaults.size).to eq(1)
 
       defaults = @config.defaults.first
-      defaults.config["mode"].should == "http"
-      defaults.config["clitimeout"].should == "60000"
-      defaults.config["srvtimeout"].should == "30000"
-      defaults.config["contimeout"].should == "4000"
+      expect(defaults.config["mode"]).to eq("http")
+      expect(defaults.config["clitimeout"]).to eq("60000")
+      expect(defaults.config["srvtimeout"]).to eq("30000")
+      expect(defaults.config["contimeout"]).to eq("4000")
 
-      defaults.options.size.should == 1
-      defaults.options.should include("httpclose")
+      expect(defaults.options.size).to eq(1)
+      expect(defaults.options).to include("httpclose")
     end
 
     it "parses a listener from a config file" do
-      @config.listeners.size.should == 1
+      expect(@config.listeners.size).to eq(1)
 
       listener = @config.listener("http_proxy")
-      listener.name.should == "http_proxy"
-      listener.host.should == "55.55.55.55"
-      listener.port.should == "80"
-      listener.config["balance"].should == "roundrobin"
+      expect(listener.name).to eq("http_proxy")
+      expect(listener.host).to eq("55.55.55.55")
+      expect(listener.port).to eq("80")
+      expect(listener.config["balance"]).to eq("roundrobin")
 
-      listener.options.size.should == 2
-      listener.options.should include("httpchk")
-      listener.options.should include("forwardfor")
+      expect(listener.options.size).to eq(2)
+      expect(listener.options).to include("httpchk")
+      expect(listener.options).to include("forwardfor")
 
-      listener.servers.size.should == 3
+      expect(listener.servers.size).to eq(3)
 
       server1 = listener.servers["web1"]
-      server1.name.should == "web1"
-      server1.host.should == "dnshost66"
-      server1.port.should == "80"
-      server1.attributes["weight"].should == "1"
-      server1.attributes["maxconn"].should == "512"
-      server1.attributes["check"].should == true
+      expect(server1.name).to eq("web1")
+      expect(server1.host).to eq("dnshost66")
+      expect(server1.port).to eq("80")
+      expect(server1.attributes["weight"]).to eq("1")
+      expect(server1.attributes["maxconn"]).to eq("512")
+      expect(server1.attributes["check"]).to eq(true)
 
       server2 = listener.servers["web2"]
-      server2.name.should == "web2"
-      server2.host.should == "77.77.77.77"
-      server2.port.should == "80"
-      server2.attributes["weight"].should == "1"
-      server2.attributes["maxconn"].should == "512"
-      server2.attributes["check"].should == true
+      expect(server2.name).to eq("web2")
+      expect(server2.host).to eq("77.77.77.77")
+      expect(server2.port).to eq("80")
+      expect(server2.attributes["weight"]).to eq("1")
+      expect(server2.attributes["maxconn"]).to eq("512")
+      expect(server2.attributes["check"]).to eq(true)
 
       server3 = listener.servers["web3"]
-      server3.name.should == "web3"
-      server3.host.should == "88.88.88.88"
-      server3.port.should == "80"
-      server3.attributes.should be_empty
+      expect(server3.name).to eq("web3")
+      expect(server3.host).to eq("88.88.88.88")
+      expect(server3.port).to eq("80")
+      expect(server3.attributes).to be_empty
     end
   end
 end

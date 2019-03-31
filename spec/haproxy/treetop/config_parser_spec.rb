@@ -29,67 +29,67 @@ describe HAProxy::Treetop::ConfigParser do
     parse_multi_pool
 
     backend = @result.backends.first
-    backend.servers.size.should == 4
-    backend.servers[0].name.should == "prd_www_1"
-    backend.servers[0].host.should == "10.214.78.95"
-    backend.servers[0].port.should == "8000"
+    expect(backend.servers.size).to eq(4)
+    expect(backend.servers[0].name).to eq("prd_www_1")
+    expect(backend.servers[0].host).to eq("10.214.78.95")
+    expect(backend.servers[0].port).to eq("8000")
   end
 
   it "can parse a service address from a frontend header" do
     parse_multi_pool
 
     frontend = @result.frontends.first
-    frontend.frontend_header.service_address.host.content.should == "*"
-    frontend.frontend_header.service_address.port.content.should == "85"
+    expect(frontend.frontend_header.service_address.host.content).to eq("*")
+    expect(frontend.frontend_header.service_address.port.content).to eq("85")
   end
 
   it "can parse a service address from a listen header" do
     parse_single_pool
 
     listener = @result.listeners.first
-    listener.listen_header.service_address.host.content.should == "55.55.55.55"
-    listener.listen_header.service_address.port.content.should == "80"
+    expect(listener.listen_header.service_address.host.content).to eq("55.55.55.55")
+    expect(listener.listen_header.service_address.port.content).to eq("80")
   end
 
   it "can parse a file with a listen section" do
     parse_single_pool
 
     @result.elements
-    @result.class.should == HAProxy::Treetop::ConfigurationFile
-    @result.elements.size.should == 5
+    expect(@result.class).to eq(HAProxy::Treetop::ConfigurationFile)
+    expect(@result.elements.size).to eq(5)
 
-    @result.elements[0].class.should == HAProxy::Treetop::CommentLine
-    @result.elements[1].class.should == HAProxy::Treetop::BlankLine
+    expect(@result.elements[0].class).to eq(HAProxy::Treetop::CommentLine)
+    expect(@result.elements[1].class).to eq(HAProxy::Treetop::BlankLine)
 
-    @result.global.should == @result.elements[2]
-    @result.elements[2].class.should == HAProxy::Treetop::GlobalSection
+    expect(@result.global).to eq(@result.elements[2])
+    expect(@result.elements[2].class).to eq(HAProxy::Treetop::GlobalSection)
 
-    @result.defaults[0].should == @result.elements[3]
-    @result.elements[3].class.should == HAProxy::Treetop::DefaultsSection
+    expect(@result.defaults[0]).to eq(@result.elements[3])
+    expect(@result.elements[3].class).to eq(HAProxy::Treetop::DefaultsSection)
 
-    @result.listeners[0].should == @result.elements[4]
-    @result.elements[4].class.should == HAProxy::Treetop::ListenSection
+    expect(@result.listeners[0]).to eq(@result.elements[4])
+    expect(@result.elements[4].class).to eq(HAProxy::Treetop::ListenSection)
   end
 
   it "can parse a file with frontend/backend sections" do
     parse_multi_pool
 
-    @result.class.should == HAProxy::Treetop::ConfigurationFile
-    @result.elements.size.should == 5
+    expect(@result.class).to eq(HAProxy::Treetop::ConfigurationFile)
+    expect(@result.elements.size).to eq(5)
 
-    @result.global.should == @result.elements[0]
-    @result.elements[0].class.should == HAProxy::Treetop::GlobalSection
+    expect(@result.global).to eq(@result.elements[0])
+    expect(@result.elements[0].class).to eq(HAProxy::Treetop::GlobalSection)
 
-    @result.defaults[0].should == @result.elements[1]
-    @result.elements[1].class.should == HAProxy::Treetop::DefaultsSection
+    expect(@result.defaults[0]).to eq(@result.elements[1])
+    expect(@result.elements[1].class).to eq(HAProxy::Treetop::DefaultsSection)
 
-    @result.frontends[0].should == @result.elements[2]
-    @result.elements[2].class.should == HAProxy::Treetop::FrontendSection
+    expect(@result.frontends[0]).to eq(@result.elements[2])
+    expect(@result.elements[2].class).to eq(HAProxy::Treetop::FrontendSection)
 
-    @result.backends[0].should == @result.elements[3]
-    @result.backends[1].should == @result.elements[4]
-    @result.elements[3].class.should == HAProxy::Treetop::BackendSection
-    @result.elements[4].class.should == HAProxy::Treetop::BackendSection
+    expect(@result.backends[0]).to eq(@result.elements[3])
+    expect(@result.backends[1]).to eq(@result.elements[4])
+    expect(@result.elements[3].class).to eq(HAProxy::Treetop::BackendSection)
+    expect(@result.elements[4].class).to eq(HAProxy::Treetop::BackendSection)
   end
 
   it "can parse userlist sections"

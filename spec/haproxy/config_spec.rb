@@ -15,7 +15,7 @@ describe "HAProxy::Config" do
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.backend("www_main").servers["prd_www_1"].should be_nil
+      expect(new_config.backend("www_main").servers["prd_www_1"]).to be_nil
     end
 
     it "can re-render a config file with a server attribute added" do
@@ -25,8 +25,8 @@ describe "HAProxy::Config" do
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
       s = new_config.backend("www_main").servers["prd_www_1"]
-      s.should_not be_nil
-      s.attributes["disabled"].should be_truthy
+      expect(s).not_to be_nil
+      expect(s.attributes["disabled"]).to be_truthy
     end
 
     it "can re-render a config file with a server added" do
@@ -37,11 +37,11 @@ describe "HAProxy::Config" do
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
       s = new_config.backend("www_main").servers["prd_www_4"]
-      s.should_not be_nil
-      s.name.should == "prd_www_4"
-      s.host.should == "99.99.99.99"
-      s.port.should == "8000"
-      s.attributes.to_a.should == [["weight", "128"]]
+      expect(s).not_to be_nil
+      expect(s.name).to eq("prd_www_4")
+      expect(s.host).to eq("99.99.99.99")
+      expect(s.port).to eq("8000")
+      expect(s.attributes.to_a).to eq([["weight", "128"]])
     end
 
     it "can re-render a config file with a server added based on template" do
@@ -52,18 +52,18 @@ describe "HAProxy::Config" do
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
       s = new_config.backend("www_main").servers["prd_www_4"]
-      s.should_not be_nil
-      s.name.should == "prd_www_4"
-      s.host.should == "99.99.99.99"
-      s.port.should == "8000"
-      s.attributes.to_a.should == [
+      expect(s).not_to be_nil
+      expect(s.name).to eq("prd_www_4")
+      expect(s.host).to eq("99.99.99.99")
+      expect(s.port).to eq("8000")
+      expect(s.attributes.to_a).to eq([
         ["cookie", "i-prd_www_1"],
         ["check", true],
         ["inter", "3000"],
         ["rise", "2"],
         ["fall", "3"],
         ["maxconn", "1000"],
-      ]
+      ])
     end
   end
 
@@ -75,7 +75,7 @@ describe "HAProxy::Config" do
     it "can re-render the config file" do
       original_text = File.read("spec/fixtures/multi-pool.haproxy.cfg")
       new_text = @config.render
-      new_text.squeeze(" ").should == original_text.squeeze(" ")
+      expect(new_text.squeeze(" ")).to eq(original_text.squeeze(" "))
     end
   end
 
@@ -85,24 +85,24 @@ describe "HAProxy::Config" do
     end
 
     it "can re-render a config file with an error page removed" do
-      @config.default.config.should have_key("errorfile 400")
+      expect(@config.default.config).to have_key("errorfile 400")
       @config.default.config.delete("errorfile 400")
 
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.default.config.should_not have_key("errorfile 400")
+      expect(new_config.default.config).not_to have_key("errorfile 400")
     end
 
     it "can re-render a config file with an error page added" do
-      @config.default.config.should_not have_key("errorfile 401")
+      expect(@config.default.config).not_to have_key("errorfile 401")
       @config.default.config["errorfile 401"] = "/etc/haproxy/errors/401.http"
 
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.default.config.should have_key("errorfile 401")
-      new_config.default.config["errorfile 401"].should == "/etc/haproxy/errors/401.http"
+      expect(new_config.default.config).to have_key("errorfile 401")
+      expect(new_config.default.config["errorfile 401"]).to eq("/etc/haproxy/errors/401.http")
     end
   end
 
@@ -112,13 +112,13 @@ describe "HAProxy::Config" do
     end
 
     it "can re-render a config file with a config removed" do
-      @config.default.config.should have_key("clitimeout")
+      expect(@config.default.config).to have_key("clitimeout")
       @config.default.config.delete("clitimeout")
 
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.default.config.should_not have_key("clitimeout")
+      expect(new_config.default.config).not_to have_key("clitimeout")
     end
 
     it "can re-render a config file with a server removed" do
@@ -128,7 +128,7 @@ describe "HAProxy::Config" do
       new_config_text = @config.render
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
-      new_config.listener("http_proxy").servers["web1"].should be_nil
+      expect(new_config.listener("http_proxy").servers["web1"]).to be_nil
     end
 
     it "can re-render a config file with a server added" do
@@ -139,15 +139,15 @@ describe "HAProxy::Config" do
 
       new_config = HAProxy::Parser.new.parse(new_config_text)
       s = new_config.listener("http_proxy").servers["web4"]
-      s.should_not be_nil
-      s.name.should == "web4"
-      s.host.should == "99.99.99.99"
-      s.port.should == "80"
-      s.attributes.to_a.should == [
+      expect(s).not_to be_nil
+      expect(s.name).to eq("web4")
+      expect(s.host).to eq("99.99.99.99")
+      expect(s.port).to eq("80")
+      expect(s.attributes.to_a).to eq([
         ["weight", "1"],
         ["maxconn", "512"],
         ["check", true],
-      ]
+      ])
     end
   end
 end
