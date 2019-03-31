@@ -58,7 +58,7 @@ module HAProxy::Treetop
     end
 
     rule config_block
-      (server_line / option_line / config_line / comment_line / blank_line)*
+      (user_line / group_line / server_line / option_line / config_line / comment_line / blank_line)*
     end
 
     rule server_line
@@ -70,7 +70,31 @@ module HAProxy::Treetop
     end
 
     rule config_line
-      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend") keyword whitespace value? comment_text? line_break <ConfigLine>
+      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend" / "userlist") keyword whitespace value? comment_text? line_break <ConfigLine>
+    end
+
+    rule user_line
+      whitespace "user" whitespace name whitespace (password / insecure_password) whitespace? group_names? <UserLine>
+    end
+
+    rule group_line
+      whitespace "group" whitespace name whitespace user_names? <GroupLine>
+    end
+
+    rule password
+      "password" whitespace [^\s]+ <Password>
+    end
+
+    rule insecure_password
+      "insecure-password" whitespace [^\s]+ <InsecurePassword>
+    end
+
+    rule group_names
+      whitespace "groups" whitespace name_list <GroupNames>
+    end
+
+    rule user_names
+      whitespace "users" whitespace name_list <UserNames>
     end
 
     rule comment_line
@@ -123,6 +147,14 @@ module HAProxy::Treetop
 
     rule proxy_name
       [a-zA-Z0-9\-_\.:]+ <ProxyName>
+    end
+
+    rule name_list
+      (name / ",")* <NameList>
+    end
+
+    rule name
+      [a-zA-Z0-9\-_]+ <Name>
     end
 
     rule value

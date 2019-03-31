@@ -3,6 +3,7 @@
 require "haproxy/treetop/shared"
 require "haproxy/treetop/service_address"
 require "haproxy/treetop/server"
+require "haproxy/treetop/userlist"
 
 module HAProxy
   module Treetop
@@ -26,6 +27,10 @@ module HAProxy
 
       def backends
         elements.select { |e| e.class == BackendSection }
+      end
+
+      def userlists
+        elements.select { |e| e.class == UserlistSection }
       end
     end
 

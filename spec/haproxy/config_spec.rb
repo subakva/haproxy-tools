@@ -3,6 +3,18 @@
 require "spec_helper"
 
 describe "HAProxy::Config" do
+  describe "render userlist config" do
+    before(:each) do
+      @config = HAProxy::Config.parse_file("spec/fixtures/userlist.haproxy.cfg")
+    end
+
+    it "can re-render the config file" do
+      original_text = File.read("spec/fixtures/userlist.haproxy.cfg")
+      new_text = @config.render
+      expect(new_text.squeeze(" ")).to eq(original_text.squeeze(" "))
+    end
+  end
+
   describe "render multi-backend config" do
     before(:each) do
       @config = HAProxy::Config.parse_file("spec/fixtures/multi-pool.haproxy.cfg")

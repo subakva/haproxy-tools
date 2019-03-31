@@ -84,6 +84,7 @@ module HAProxy
         config.backends   += collect_backends(result)
         config.listeners  += collect_listeners(result)
         config.defaults   += collect_defaults(result)
+        config.userlists  += collect_userlists(result)
       end
     end
 
@@ -117,6 +118,33 @@ module HAProxy
       end
     end
 
+    def build_userlist(section)
+      Userlist.new.tap do |ul|
+        ul.name   = try_send(section.userlist_header, :proxy_name, :content)
+        ul.users  = users_from_userlist_section(section)
+        ul.groups = groups_from_userlist_section(section)
+      end
+    end
+
+    def users_from_userlist_section(section)
+      section.users.map do |user_line|
+        UserlistUser.new.tap do |u|
+          u.name      = user_line.name.content
+          u.password  = user_line.password
+          u.groups    = user_line.group_names
+        end
+      end
+    end
+
+    def groups_from_userlist_section(section)
+      section.groups.map do |group_line|
+        UserlistGroup.new.tap do |g|
+          g.name = group_line.name.content
+          g.users = group_line.user_names
+        end
+      end
+    end
+
     def build_default(ds)
       Default.new.tap do |d|
         d.name        = try_send(ds.defaults_header, :proxy_name, :content)
@@ -135,6 +163,10 @@ module HAProxy
 
     def collect_listeners(result)
       result.listeners.map { |ls| build_listener(ls) }
+    end
+
+    def collect_userlists(result)
+      result.userlists.map { |ls| build_userlist(ls) }
     end
 
     def collect_defaults(result)

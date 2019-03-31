@@ -3,6 +3,45 @@
 require "spec_helper"
 
 describe "HAProxy::Parser" do
+  context "userlist config file" do
+    before(:each) do
+      @parser = HAProxy::Parser.new
+      @config = @parser.parse_file("spec/fixtures/userlist.haproxy.cfg")
+    end
+
+    it "parses userlists" do
+      expect(@config.userlists.map(&:name)).to eq(["groups_list_users", "users_list_groups"])
+
+      ul1 = @config.userlists.find { |ul| ul.name == "groups_list_users" }
+      expect(ul1.users.size).to eq(3)
+      expect(ul1.users.map(&:name)).to eq(["tiger", "scott", "xdb"])
+      expect(ul1.users.map(&:password)).to eq([
+        "password $6$k6y3o.eP$JlKBx9za9667qe4(...)xHSwRv6J.C0/D7cV91",
+        "insecure-password elgato",
+        "insecure-password hello",
+      ])
+      expect(ul1.users.map(&:groups)).to eq([[], [], []])
+
+      expect(ul1.groups.size).to eq(2)
+      expect(ul1.groups.map(&:name)).to eq(["G1", "G2"])
+      expect(ul1.groups.map(&:users)).to eq([["scott", "tiger"], ["scott", "xdb"]])
+
+      ul2 = @config.userlists.find { |ul| ul.name == "users_list_groups" }
+      expect(ul2.users.size).to eq(3)
+      expect(ul2.users.map(&:name)).to eq(["tiger", "scott", "xdb"])
+      expect(ul2.users.map(&:password)).to eq([
+        "password $6$k6y3o.eP$JlKBx(...)xHSwRv6J.C0/D7cV91",
+        "insecure-password elgato",
+        "insecure-password hello",
+      ])
+      expect(ul2.users.map(&:groups)).to eq([["G1"], ["G1", "G2"], ["G2"]])
+
+      expect(ul2.groups.size).to eq(2)
+      expect(ul2.groups.map(&:name)).to eq(["G1", "G2"])
+      expect(ul2.groups.map(&:users)).to eq([[], []])
+    end
+  end
+
   context "multi-pool config file" do
     before(:each) do
       @parser = HAProxy::Parser.new

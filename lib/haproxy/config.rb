@@ -6,6 +6,9 @@ module HAProxy
   Listener  = Struct.new(:name, :host, :port, :options, :config, :servers)
   Frontend  = Struct.new(:name, :host, :port, :options, :config)
   Server    = Struct.new(:name, :host, :port, :attributes)
+  Userlist  = Struct.new(:name, :users, :groups)
+  UserlistGroup  = Struct.new(:name, :users)
+  UserlistUser   = Struct.new(:name, :password, :groups)
 
   # Contains shared methods for config objects that contain a list of servers. The including class
   # is expected to have an instance variable called :servers that contains a hash of server
@@ -35,7 +38,8 @@ module HAProxy
 
   # Represents an haproxy configuration file.
   class Config
-    attr_accessor :original_parse_tree, :listeners, :backends, :frontends, :global, :defaults
+    attr_accessor :original_parse_tree, :listeners, :backends, :frontends, :global, :defaults,
+      :userlists
 
     def initialize(parse_tree)
       self.original_parse_tree = parse_tree
@@ -43,6 +47,7 @@ module HAProxy
       self.listeners  = []
       self.frontends  = []
       self.defaults   = []
+      self.userlists  = []
       self.global     = {}
     end
 
@@ -52,6 +57,10 @@ module HAProxy
 
     def backend(name)
       backends.find { |b| b.name == name }
+    end
+
+    def userlist(name)
+      userlists.find { |b| b.name == name }
     end
 
     def frontend(name)
