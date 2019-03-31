@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module HAProxy
   # Responsible for reading an HAProxy config file and building an HAProxy::Config instance.
   class Parser
@@ -12,7 +13,7 @@ module HAProxy
     # Added in haproxy 1.4
     SERVER_ATTRIBUTE_NAMES_1_4 = %w{error-limit observe on-error}
     # Added in haproxy 1.5
-    SERVER_ATTRIBUTE_NAMES_1_5 = %w{ 
+    SERVER_ATTRIBUTE_NAMES_1_5 = %w{
       agent-check agent-inter agent-port ca-file check-send-proxy check-ssl
       ciphers crl-file crt error-limit force-sslv3 force-tlsv10 force-tlsv11
       force-tlsv12 no-sslv3 no-tls-tickets no-tlsv10 no-tlsv11 no-tlsv12 non-stick observe
@@ -29,7 +30,7 @@ module HAProxy
     }
     SERVER_ATTRIBUTE_NAMES_1_8 = %w{
       agent-addr check-sni enabled force-tlsv13 no-agent-check no-backup no-check no-check-ssl
-      no-send-proxy no-send-proxy-v2 no-send-proxy-v2-ssl no-send-proxy-v2-ssl-cn no-ssl no-tlsv13 
+      no-send-proxy no-send-proxy-v2 no-send-proxy-v2-ssl no-send-proxy-v2-ssl-cn no-ssl no-tlsv13
       no-verifyhost ssl-max-ver ssl-min-ver ssl-reuse stick tls-tickets
     }
     # SERVER_ATTRIBUTE_NAMES_1_9 = %w{ } # as of 1/16/18 I do not see new server attributes in haproxy 1.9

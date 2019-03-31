@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module HAProxy
   # Responsible for rendering an HAProxy::Config instance to a string.
   class Renderer
@@ -11,7 +12,7 @@ module HAProxy
       @config_list      = {}
       @context          = self.config
       @prev_context     = self.config
-      @config_text      = ''
+      @config_text      = String.new
     end
 
     def render
@@ -110,7 +111,7 @@ module HAProxy
     end
 
     def render_server_attributes(attributes)
-      attribute_string = ""
+      attribute_string = String.new
       attributes.each do |name, value|
         attribute_string << name.to_s
         attribute_string << " "

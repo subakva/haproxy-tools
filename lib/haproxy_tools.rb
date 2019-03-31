@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'treetop'
 require 'haproxy/treetop/config'
 require 'haproxy/config'

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module HAProxy
   Default   = Struct.new(:name, :options, :config)
   Backend   = Struct.new(:name, :options, :config, :servers)
