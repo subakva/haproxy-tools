@@ -65,12 +65,24 @@ describe "HAProxy::Config" do
     end
   end
 
+  describe 're-render multi-pool config' do
+    before(:each) do
+      @config = HAProxy::Config.parse_file('spec/fixtures/multi-pool.haproxy.cfg')
+    end
+
+    it 'can re-render the config file' do
+      original_text = File.read('spec/fixtures/multi-pool.haproxy.cfg')
+      new_text = @config.render
+      new_text.squeeze(' ').should == original_text.squeeze(' ')
+    end
+  end
+
   describe 'render simple 1.5 config' do
     before(:each) do
       @config = HAProxy::Config.parse_file('spec/fixtures/simple.haproxy15.cfg')
     end
 
-    it 'cen re-render a config file with an error page removed' do
+    it 'can re-render a config file with an error page removed' do
       @config.default.config.should have_key('errorfile 400')
       @config.default.config.delete('errorfile 400')
 

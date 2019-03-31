@@ -37,7 +37,7 @@ module HAProxy
           # Keep track of the configs in this config block we've seen, so that we can detect and render new ones.
           @config_list[e.key] = e
           # Don't render the config *if* it's been removed from the config block.
-          next if @context.config[e.key].nil?
+          next unless @context.config.key?(e.key)
         end
 
         if e.class == HAProxy::Treetop::ServerLine
@@ -71,7 +71,8 @@ module HAProxy
     end
 
     def render_config_line(key, value)
-      @config_text << "\t#{key} #{value}\n"
+      content = "#{key} #{value}".strip
+      @config_text << "\t#{content}\n"
     end
 
     def render_server_element(e)
@@ -81,7 +82,8 @@ module HAProxy
 
     def render_server(server)
       attribute_string = render_server_attributes(server.attributes)
-      @config_text << "\tserver #{server.name} #{server.host}:#{server.port} #{attribute_string}\n"
+      content = "server #{server.name} #{server.host}:#{server.port} #{attribute_string}".strip
+      @config_text << "\t#{content}\n"
     end
 
     def handle_context_change
