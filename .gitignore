@@ -13,3 +13,5 @@ tmp
 *.orig
 .bundle
 .idea
+.byebug_history
+

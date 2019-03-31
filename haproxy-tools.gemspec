@@ -24,6 +24,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("net-scp")
   gem.add_dependency("treetop")
   gem.add_development_dependency("awesome_print")
+  gem.add_development_dependency("byebug")
   gem.add_development_dependency("cane")
   gem.add_development_dependency("rake")
   gem.add_development_dependency("rspec")
