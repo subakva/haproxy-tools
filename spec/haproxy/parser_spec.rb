@@ -8,6 +8,32 @@ describe "HAProxy::Parser" do
       @config = @parser.parse_file('spec/fixtures/multi-pool.haproxy.cfg')
     end
 
+    it "parses default_backend" do
+      @config.frontends.size.should == 1
+      www_frontend = @config.frontend('www')
+      www_frontend.config["default_backend"].should == 'www_main'
+    end
+
+    it "parses defaults" do
+      @config.defaults.size.should == 1
+
+      defaults = @config.defaults.first
+      defaults.config['log'].should == 'global'
+      defaults.config['mode'].should == 'http'
+      defaults.config['retries'].should == '3'
+      defaults.config['redispatch'].should == nil
+      defaults.config['maxconn'].should == '10000'
+      defaults.config['contimeout'].should == '5000'
+      defaults.config['clitimeout'].should == '60000'
+      defaults.config['srvtimeout'].should == '60000'
+      defaults.config['stats'].should == 'uri /haproxy-status'
+      defaults.config['cookie'].should == 'SERVERID insert indirect nocache'
+
+      defaults.options.size.should == 2
+      defaults.options.should include('httplog')
+      defaults.options.should include('dontlognull')
+    end
+
     it "parses a named backend from a config file" do
       @config.backends.size.should == 2
       logs_backend = @config.backend('logs')
