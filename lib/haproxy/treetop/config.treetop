@@ -1,4 +1,6 @@
-require 'haproxy/treetop/nodes'
+# frozen_string_literal: true
+
+require 'haproxy/treetop/configuration_file'
 
 module HAProxy::Treetop
 
@@ -32,11 +34,11 @@ module HAProxy::Treetop
     end
 
     rule global_header
-      whitespace "global" whitespace comment_text? line_break <GlobalHeader>
+      whitespace "global" whitespace comment_text? line_break
     end
 
     rule userlist_header
-      whitespace "userlist" whitespace proxy_name comment_text? line_break <UseristHeader>
+      whitespace "userlist" whitespace proxy_name comment_text? line_break
     end
 
     rule defaults_header
@@ -52,11 +54,11 @@ module HAProxy::Treetop
     end
 
     rule backend_header
-      whitespace "backend" whitespace proxy_name whitespace value? comment_text? line_break <BackendHeader>
+      whitespace "backend" whitespace proxy_name whitespace value? comment_text? line_break
     end
 
     rule config_block
-      (server_line / option_line / config_line / comment_line / blank_line)* <ConfigBlock>
+      (server_line / option_line / config_line / comment_line / blank_line)*
     end
 
     rule server_line
