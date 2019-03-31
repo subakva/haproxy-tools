@@ -143,10 +143,10 @@ module HAProxy
 
     def try_send(node, *method_names)
       method_name = method_names.shift
-      if node.respond_to?(method_name)
-        next_node = node.send(method_name)
-        method_names.empty? ? next_node : try_send(next_node, *method_names)
-      end
+      return unless node.respond_to?(method_name)
+
+      next_node = node.send(method_name)
+      method_names.empty? ? next_node : try_send(next_node, *method_names)
     end
 
     def server_hash_from_config_section(cs)
