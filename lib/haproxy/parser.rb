@@ -168,14 +168,14 @@ module HAProxy
     def parse_server_attributes(value)
       parts = value.to_s.split(/\s/)
       current_name = nil
-      pairs = parts.each_with_object({}) { |part, pairs|
+      pairs = parts.each_with_object({}) { |part, attrs|
         if SERVER_ATTRIBUTE_NAMES.include?(part)
           current_name = part
-          pairs[current_name] = []
+          attrs[current_name] = []
         elsif current_name.nil?
           raise "Invalid server attribute: #{part}"
         else
-          pairs[current_name] << part
+          attrs[current_name] << part
         end
       }
 

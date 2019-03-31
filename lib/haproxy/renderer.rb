@@ -12,7 +12,7 @@ module HAProxy
       @config_list      = {}
       @context          = self.config
       @prev_context     = self.config
-      @config_text      = String.new
+      @config_text      = +""
     end
 
     def render
@@ -35,7 +35,8 @@ module HAProxy
         end
 
         if (e.class == HAProxy::Treetop::ConfigLine) && (@context.class == HAProxy::Default)
-          # Keep track of the configs in this config block we've seen, so that we can detect and render new ones.
+          # Keep track of the configs in this config block we've seen, so that
+          # we can detect and render new ones.
           @config_list[e.key] = e
           # Don't render the config *if* it's been removed from the config block.
           next unless @context.config.key?(e.key)
@@ -111,7 +112,7 @@ module HAProxy
     end
 
     def render_server_attributes(attributes)
-      attribute_string = String.new
+      attribute_string = +""
       attributes.each do |name, value|
         attribute_string << name.to_s
         attribute_string << " "

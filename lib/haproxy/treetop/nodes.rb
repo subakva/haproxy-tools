@@ -51,6 +51,7 @@ module HAProxy
       end
     end
 
+    # Helper class for whitespace nodes
     class Whitespace < ::Treetop::Runtime::SyntaxNode
       def content
         text_value
@@ -104,6 +105,7 @@ module HAProxy
       include StrippedTextContent
     end
 
+    # Helper class for config nodes
     class ConfigLine < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       include OptionalValueElement
@@ -122,6 +124,7 @@ module HAProxy
       include OptionalValueElement
     end
 
+    # Helper class for server nodes
     class ServerLine < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       include ServiceAddressContainer
@@ -136,6 +139,7 @@ module HAProxy
       include StrippedTextContent
     end
 
+    # Helper class for defaults header nodes
     class DefaultsHeader < ::Treetop::Runtime::SyntaxNode
       include StrippedTextContent
       def proxy_name
@@ -188,6 +192,7 @@ module HAProxy
       include ServerContainer
     end
 
+    # Helper class for the root config file node
     class ConfigurationFile < ::Treetop::Runtime::SyntaxNode
       def global
         elements.select {|e| e.class == GlobalSection}.first
