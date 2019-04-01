@@ -3,6 +3,55 @@
 require "spec_helper"
 
 describe "HAProxy::Parser" do
+  context 'kitchen sink' do
+    let(:parser) { HAProxy::Parser.new }
+    let!(:config) { parser.parse_file("spec/fixtures/haproxy.1.9.cfg")}
+
+    it "parses global variables" do
+      expect(config.global.size).to eq(6)
+      expect(config.global['ca-base']).to eq('/home/ca')
+      expect(config.global['cpu-map']).to eq([
+        'auto:1/1-4   0-3',
+        'auto:1/1-4   0-1 2-3',
+        'auto:1/1-4   3 2 1 0',
+      ])
+      expect(config.global['daemon']).to be_nil
+      expect(config.global['profiling.tasks']).to eq('on')
+    end
+
+    it 'parses userlists' do
+      expect(config.userlists.map(&:name)).to eq(["groups_list_users", "users_list_groups"])
+
+      ul1 = config.userlists.find { |ul| ul.name == "groups_list_users" }
+      expect(ul1.users.size).to eq(3)
+      expect(ul1.users.map(&:name)).to eq(["tiger", "scott", "xdb"])
+      expect(ul1.users.map(&:password)).to eq([
+        "password $6$k6y3o.eP$JlKBx9za9667qe4(...)xHSwRv6J.C0/D7cV91",
+        "insecure-password elgato",
+        "insecure-password hello",
+      ])
+      expect(ul1.users.map(&:groups)).to eq([[], [], []])
+
+      expect(ul1.groups.size).to eq(2)
+      expect(ul1.groups.map(&:name)).to eq(["G1", "G2"])
+      expect(ul1.groups.map(&:users)).to eq([["scott", "tiger"], ["scott", "xdb"]])
+
+      ul2 = config.userlists.find { |ul| ul.name == "users_list_groups" }
+      expect(ul2.users.size).to eq(3)
+      expect(ul2.users.map(&:name)).to eq(["tiger", "scott", "xdb"])
+      expect(ul2.users.map(&:password)).to eq([
+        "password $6$k6y3o.eP$JlKBx(...)xHSwRv6J.C0/D7cV91",
+        "insecure-password elgato",
+        "insecure-password hello",
+      ])
+      expect(ul2.users.map(&:groups)).to eq([["G1"], ["G1", "G2"], ["G2"]])
+
+      expect(ul2.groups.size).to eq(2)
+      expect(ul2.groups.map(&:name)).to eq(["G1", "G2"])
+      expect(ul2.groups.map(&:users)).to eq([[], []])
+    end
+  end
+
   context "userlist config file" do
     before(:each) do
       @parser = HAProxy::Parser.new
@@ -109,7 +158,7 @@ describe "HAProxy::Parser" do
     end
 
     it "parses structured configs" do
-      defaults = @config.defaults.first.config
+      defaults = config.defaults.first.config
 
       expect(defaults["timeout connect"]).to eq("5000ms")
       expect(defaults["timeout client"]).to eq("5000ms")
@@ -128,6 +177,7 @@ describe "HAProxy::Parser" do
 
     it "parses global variables from a config file" do
       expect(@config.global.size).to eq(3)
+
       expect(@config.global["maxconn"]).to eq("4096")
       expect(@config.global["daemon"]).to be_nil
       expect(@config.global["nbproc"]).to eq("4")

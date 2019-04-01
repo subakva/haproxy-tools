@@ -4,97 +4,139 @@ require 'haproxy/treetop/configuration_file'
 
 module HAProxy::Treetop
 
-  grammar Config
+  grammar NewConfig
+    # The entire configuration including all sections and lines.
     rule configuration
-      (comment_line / blank_line / global_section / defaults_section / userlist_section / listen_section / frontend_section / backend_section)* <ConfigurationFile>
+      (
+        comment_line /
+        blank_line /
+        global_section /
+        defaults_section /
+        backend_section /
+        frontend_section /
+        listen_section /
+        userlist_section /
+        resolvers_section /
+        cache_section /
+        peers_section /
+        mailers_section
+      )* <ConfigurationFile>
     end
 
     rule global_section
-      global_header config_block <GlobalSection>
-    end
-
-    rule defaults_section
-      defaults_header config_block <DefaultsSection>
-    end
-
-    rule userlist_section
-      userlist_header config_block <UserlistSection>
-    end
-
-    rule listen_section
-      listen_header config_block <ListenSection>
-    end
-
-    rule frontend_section
-      frontend_header config_block <FrontendSection>
-    end
-
-    rule backend_section
-      backend_header config_block <BackendSection>
+      global_header parameter_block <GlobalSection>
     end
 
     rule global_header
-      whitespace "global" whitespace comment_text? line_break
+      whitespace "global" whitespace comment_text? line_break <GlobalHeader>
     end
 
-    rule userlist_header
-      whitespace "userlist" whitespace proxy_name comment_text? line_break
-    end
-
-    rule defaults_header
-      whitespace "defaults" whitespace proxy_name? whitespace comment_text? line_break <DefaultsHeader>
-    end
-
-    rule listen_header
-      whitespace "listen" whitespace proxy_name whitespace service_address? value? comment_text? line_break <ListenHeader>
-    end
-
-    rule frontend_header
-      whitespace "frontend" whitespace proxy_name whitespace service_address? value? comment_text? line_break <FrontendHeader>
+    rule backend_section
+      backend_header parameter_block <BackendSection>
     end
 
     rule backend_header
-      whitespace "backend" whitespace proxy_name whitespace value? comment_text? line_break
+      whitespace "backend" whitespace section_name whitespace comment_text? line_break <NamedHeader>
     end
 
-    rule config_block
-      (user_line / group_line / server_line / option_line / config_line / comment_line / blank_line)*
+    rule frontend_section
+      frontend_header parameter_block <FrontendSection>
     end
 
-    rule server_line
-      whitespace "server" whitespace server_name whitespace service_address value? comment_text? line_break <ServerLine>
+    rule frontend_header
+      whitespace "frontend" whitespace section_name whitespace comment_text? line_break <NamedHeader>
     end
 
-    rule option_line
-      whitespace "option" whitespace keyword whitespace value? comment_text? line_break <OptionLine>
+    rule listen_section
+      listen_header parameter_block <ListenSection>
     end
 
-    rule config_line
-      whitespace !("defaults" / "global" / "listen" / "frontend" / "backend" / "userlist") keyword whitespace value? comment_text? line_break <ConfigLine>
+    rule listen_header
+      whitespace "listen" whitespace section_name whitespace comment_text? line_break <NamedHeader>
     end
 
-    rule user_line
-      whitespace "user" whitespace name whitespace (password / insecure_password) whitespace? group_names? <UserLine>
+    rule defaults_section
+      defaults_header parameter_block <DefaultsSection>
     end
 
-    rule group_line
-      whitespace "group" whitespace name whitespace user_names? <GroupLine>
+    rule defaults_header
+      whitespace "defaults" whitespace section_name whitespace comment_text? line_break <NamedHeader>
     end
 
-    rule password
-      "password" whitespace [^\s]+ <Password>
+    rule userlist_section
+      userlist_header userlist_block <UserlistSection>
     end
 
-    rule insecure_password
-      "insecure-password" whitespace [^\s]+ <InsecurePassword>
+    rule userlist_header
+      whitespace "userlist" whitespace section_name whitespace comment_text? line_break <NamedHeader>
     end
 
-    rule group_names
-      whitespace "groups" whitespace name_list <GroupNames>
+    rule resolvers_section
+      resolvers_header parameter_block <ResolversSection>
     end
 
-    rule user_names
-      whitespace "users" whitespace name_list <UserNames>
+    rule resolvers_header
+      whitespace "resolvers" whitespace section_name whitespace comment_text? line_break <NamedHeader>
+    end
+
+    rule cache_section
+      cache_header parameter_block <CacheSection>
+    end
+
+    rule cache_header
+      whitespace "cache" whitespace section_name whitespace comment_text? line_break <NamedHeader>
+    end
+
+    rule peers_section
+      peers_header parameter_block <PeersSection>
+    end
+
+    rule peers_header
+      whitespace "peers" whitespace section_name whitespace comment_text? line_break <NamedHeader>
+    end
+
+    rule mailers_section
+      mailers_header parameter_block <MailersSection>
+    end
+
+    rule mailers_header
+      whitespace "mailers" whitespace section_name whitespace comment_text? line_break <NamedHeader>
+    end
+
+    # rule proxy_header
+    #   whitespace header_keyword whitespace section_name? whitespace service_address? comment_text? line_break
+    # end
+
+    rule section_name
+      [a-zA-Z0-9_\-\.:]+
+    end
+
+    # rule proxy_section
+    #   proxy_header parameter_block
+    # end
+
+#     rule listen_header
+#       whitespace "listen" whitespace proxy_name whitespace service_address? value? comment_text? line_break <ListenHeader>
+#     end
+
+    # rule defaults_header
+    #   whitespace "defaults" whitespace comment_text? line_break
+    # end
+
+    # rule defaults_section
+    #   defaults_header parameter_block <DefaultsSection>
+    # end
+
+    rule parameter_block
+      (parameter_line / comment_line / blank_line)*
+    end
+
+    rule header_keyword
+      "defaults" / "global" / "listen" / "frontend" / "backend" / "userlist"
+    end
+
+    rule parameter_line
+      whitespace !header_keyword keyword whitespace parameter_value (comment_text / '') line_break <ParameterLine>
     end
 
     rule comment_line
@@ -105,118 +147,310 @@ module HAProxy::Treetop
       whitespace line_break <BlankLine>
     end
 
+    # userlist section -- user parameter line
+    rule userlist_block
+      (user_line / group_line / comment_line / blank_line)*
+    end
+
+    rule user_line
+      whitespace "user" whitespace userlist_name whitespace (password / insecure_password) whitespace group_name_list? comment_text? line_break <UserLine>
+    end
+
+    # userlist section -- group parameter line
+    rule group_line
+      whitespace "group" whitespace userlist_name whitespace user_name_list? whitespace comment_text? line_break <GroupLine>
+    end
+
+    rule password
+      "password" whitespace [^\s]+ <UserLine::Password>
+    end
+
+    rule insecure_password
+      "insecure-password" whitespace [^\s]+ <UserLine::InsecurePassword>
+    end
+
+    rule group_name_list
+      whitespace "groups" whitespace userlist_name_list <UserlistSection::NameList>
+    end
+
+    rule user_name_list
+      whitespace "users" whitespace userlist_name_list <UserlistSection::NameList>
+    end
+
+    rule userlist_name_list
+      # TODO: allow whitespace in here?
+      (userlist_name / ",")*
+    end
+
+    rule userlist_name
+      [a-zA-Z0-9\-_]+
+    end
+
+    # rule service_address
+    #   host [:]? port
+    # end
+
+    # rule host
+    #   ipv4_host / dns_host / wildcard_host
+    # end
+
+    # rule port
+    #   [\d]*
+    # end
+
+    # rule ipv4_host
+    #   [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3
+    # end
+
+    # rule wildcard_host
+    #   "*"
+    # end
+
+    # rule dns_host
+    #   [a-zA-Z\-\.\d] 4..255
+    # end
+
     rule comment_text
       '#' char* &line_break <CommentText>
     end
 
-    rule line_break
-      [\n] <LineBreak>
-    end
-
-    rule keyword
-       (("errorfile" / "timeout") whitespace)? [a-z0-9_\-\.]+ <Keyword>
-    end
-
-    rule server_name
-      [a-zA-Z0-9\-_\.:]+ <ServerName>
-    end
-
-    rule service_address
-      host [:]? port <ServiceAddress>
-    end
-
-    rule host
-      ipv4_host / dns_host / wildcard_host
-    end
-
-    rule port
-      [\d]* <Port>
-    end
-
-    rule ipv4_host
-      [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 <Host>
-    end
-
-    rule wildcard_host
-      "*" <Host>
-    end
-
-    rule dns_host
-      [a-zA-Z\-\.\d] 4..255 <Host>
-    end
-
-    rule proxy_name
-      [a-zA-Z0-9\-_\.:]+ <ProxyName>
-    end
-
-    rule name_list
-      (name / ",")* <NameList>
-    end
-
-    rule name
-      [a-zA-Z0-9\-_]+ <Name>
-    end
-
-    rule value
-      [^#\n]+ <Value>
+    rule whitespace
+      [ \t]*
     end
 
     rule char
-      ![\n] . <Char>
+      ![\n] .
     end
 
-    rule whitespace
-      [ \t]* <Whitespace>
+    # A parameter keyword
+    rule keyword
+       [a-z0-9_\-\.]+
     end
 
-# Valid Global Keywords (1.4)
-# * Process management and security
-#   - chroot <jail dir>
-#   - daemon
-#   - gid <number>
-#   - group <group name>
-#   - log <address> <facility> [max level [min level]]
-#   - log-send-hostname [<string>]
-#   ? log-tag <string>
-#   - nbproc <number>
-#   - pidfile <pidfile>
-#   - uid <number>
-#   - ulimit-n <number>
-#   - user <user name>
-#   - stats socket <path> [{uid | user} <uid>] [{gid | group} <gid>] [mode <mode>] [level <level>]
-#   - stats timeout <timeout, in milliseconds>
-#   - stats maxconn <connections>
-#   - node <name>
-#   - description <text>
-#
-# * Performance tuning
-#   - maxconn <number>
-#   - maxpipes <number>
-#   - noepoll
-#   - nokqueue
-#   - nopoll
-#   - nosepoll
-#   - nosplice
-#   - spread-checks <0..50, in percent>
-#   - tune.bufsize <number>
-#   - tune.chksize <number>
-#   - tune.maxaccept <number>
-#   - tune.maxpollevents <number>
-#   - tune.maxrewrite <number>
-#   - tune.rcvbuf.client <number>
-#   - tune.rcvbuf.server <number>
-#   - tune.sndbuf.client <number>
-#   - tune.sndbuf.server <number>
-#
-# * Debugging
-#   - debug
-#   - quiet
+    # Everything after the keyword, but before a comment or the end of the line
+    rule parameter_value
+      [^#\n]*
+    end
 
-# Valid Userlist keywords
-#   - userlist <listname>
-#   - group <groupname> [users <user>,<user>,(...)]
-#   - user <username> [password|insecure-password <password>] [groups <group>,<group>,(...)]
-
-
+    # The end of the line
+    rule line_break
+      [\n]
+    end
   end
+
+#   grammar Config
+#     rule configuration
+#       (comment_line / blank_line / global_section / defaults_section / userlist_section / listen_section / frontend_section / backend_section)* <ConfigurationFile>
+#     end
+
+#     rule global_section
+#       global_header config_block <GlobalSection>
+#     end
+
+#     rule defaults_section
+#       defaults_header config_block <DefaultsSection>
+#     end
+
+#     rule userlist_section
+#       userlist_header config_block <UserlistSection>
+#     end
+
+#     rule listen_section
+#       listen_header config_block <ListenSection>
+#     end
+
+#     rule frontend_section
+#       frontend_header config_block <FrontendSection>
+#     end
+
+#     rule backend_section
+#       backend_header config_block <BackendSection>
+#     end
+
+#     rule global_header
+#       whitespace "global" whitespace comment_text? line_break
+#     end
+
+#     rule userlist_header
+#       whitespace "userlist" whitespace proxy_name comment_text? line_break
+#     end
+
+#     rule defaults_header
+#       whitespace "defaults" whitespace proxy_name? whitespace comment_text? line_break <DefaultsHeader>
+#     end
+
+#     rule listen_header
+#       whitespace "listen" whitespace proxy_name whitespace service_address? value? comment_text? line_break <ListenHeader>
+#     end
+
+#     rule frontend_header
+#       whitespace "frontend" whitespace proxy_name whitespace service_address? value? comment_text? line_break <FrontendHeader>
+#     end
+
+#     rule backend_header
+#       whitespace "backend" whitespace proxy_name whitespace value? comment_text? line_break
+#     end
+
+#     rule config_block
+#       (user_line / group_line / server_line / option_line / config_line / comment_line / blank_line)*
+#     end
+
+#     rule server_line
+#       whitespace "server" whitespace server_name whitespace service_address value? comment_text? line_break <ServerLine>
+#     end
+
+#     rule option_line
+#       whitespace "option" whitespace keyword whitespace value? comment_text? line_break <OptionLine>
+#     end
+
+#     rule config_line
+#       whitespace !("defaults" / "global" / "listen" / "frontend" / "backend" / "userlist") keyword whitespace value? comment_text? line_break <ConfigLine>
+#     end
+
+#     rule user_line
+#       whitespace "user" whitespace name whitespace (password / insecure_password) whitespace? group_names? <UserLine>
+#     end
+
+#     rule group_line
+#       whitespace "group" whitespace name whitespace user_names? <GroupLine>
+#     end
+
+#     rule password
+#       "password" whitespace [^\s]+ <Password>
+#     end
+
+#     rule insecure_password
+#       "insecure-password" whitespace [^\s]+ <InsecurePassword>
+#     end
+
+#     rule group_names
+#       whitespace "groups" whitespace name_list <GroupNames>
+#     end
+
+#     rule user_names
+#       whitespace "users" whitespace name_list <UserNames>
+#     end
+
+#     rule comment_line
+#       whitespace comment_text line_break <CommentLine>
+#     end
+
+#     rule blank_line
+#       whitespace line_break <BlankLine>
+#     end
+
+#     rule comment_text
+#       '#' char* &line_break <CommentText>
+#     end
+
+#     rule line_break
+#       [\n] <LineBreak>
+#     end
+
+#     rule keyword
+#        (("errorfile" / "timeout") whitespace)? [a-z0-9_\-\.]+ <Keyword>
+#     end
+
+#     rule server_name
+#       [a-zA-Z0-9\-_\.:]+ <ServerName>
+#     end
+
+#     rule service_address
+#       host [:]? port <ServiceAddress>
+#     end
+
+#     rule host
+#       ipv4_host / dns_host / wildcard_host
+#     end
+
+#     rule port
+#       [\d]* <Port>
+#     end
+
+#     rule ipv4_host
+#       [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 '.' [\d] 1..3 <Host>
+#     end
+
+#     rule wildcard_host
+#       "*" <Host>
+#     end
+
+#     rule dns_host
+#       [a-zA-Z\-\.\d] 4..255 <Host>
+#     end
+
+#     rule proxy_name
+#       [a-zA-Z0-9\-_\.:]+ <ProxyName>
+#     end
+
+#     rule name_list
+#       (name / ",")* <NameList>
+#     end
+
+#     rule name
+#       [a-zA-Z0-9\-_]+ <Name>
+#     end
+
+#     rule value
+#       [^#\n]+ <Value>
+#     end
+
+#     rule char
+#       ![\n] . <Char>
+#     end
+
+#     rule whitespace
+#       [ \t]* <Whitespace>
+#     end
+
+# # Valid Global Keywords (1.4)
+# # * Process management and security
+# #   - chroot <jail dir>
+# #   - daemon
+# #   - gid <number>
+# #   - group <group name>
+# #   - log <address> <facility> [max level [min level]]
+# #   - log-send-hostname [<string>]
+# #   ? log-tag <string>
+# #   - nbproc <number>
+# #   - pidfile <pidfile>
+# #   - uid <number>
+# #   - ulimit-n <number>
+# #   - user <user name>
+# #   - stats socket <path> [{uid | user} <uid>] [{gid | group} <gid>] [mode <mode>] [level <level>]
+# #   - stats timeout <timeout, in milliseconds>
+# #   - stats maxconn <connections>
+# #   - node <name>
+# #   - description <text>
+# #
+# # * Performance tuning
+# #   - maxconn <number>
+# #   - maxpipes <number>
+# #   - noepoll
+# #   - nokqueue
+# #   - nopoll
+# #   - nosepoll
+# #   - nosplice
+# #   - spread-checks <0..50, in percent>
+# #   - tune.bufsize <number>
+# #   - tune.chksize <number>
+# #   - tune.maxaccept <number>
+# #   - tune.maxpollevents <number>
+# #   - tune.maxrewrite <number>
+# #   - tune.rcvbuf.client <number>
+# #   - tune.rcvbuf.server <number>
+# #   - tune.sndbuf.client <number>
+# #   - tune.sndbuf.server <number>
+# #
+# # * Debugging
+# #   - debug
+# #   - quiet
+
+# # Valid Userlist keywords
+# #   - userlist <listname>
+# #   - group <groupname> [users <user>,<user>,(...)]
+# #   - user <username> [password|insecure-password <password>] [groups <group>,<group>,(...)]
+
+
+#   end
 end
