@@ -3,7 +3,6 @@
 require "haproxy/treetop/shared"
 require "haproxy/treetop/userlist"
 # require "haproxy/treetop/service_address"
-# require "haproxy/treetop/server"
 
 module HAProxy
   module Treetop

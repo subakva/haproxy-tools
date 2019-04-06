@@ -13,7 +13,6 @@ module HAProxy
         include ParameterContainer
 
         def users
-          'single'
           @users ||= userlist_block.elements.select { |e| e.class == UserLine }
         end
 
