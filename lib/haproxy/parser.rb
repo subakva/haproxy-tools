@@ -72,11 +72,10 @@ module HAProxy
     protected
 
     def parse_config_text(config_text)
-      # parser = HAProxy::Treetop::ConfigParser.new
-      parser = HAProxy::Treetop::NewConfigParser.new
+      parser = HAProxy::Treetop::ConfigParser.new
       result = parser.parse(config_text)
       raise HAProxy::Parser::Error.new(parser.failure_reason) if result.nil?
-      ap result
+      # ap result
       result
     end
 
