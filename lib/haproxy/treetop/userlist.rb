@@ -4,68 +4,69 @@ require "haproxy/treetop/shared"
 
 module HAProxy
   module Treetop
-    class UserlistSection < ::Treetop::Runtime::SyntaxNode
-      include ConfigBlockContainer
+    module Userlist
+      class Password < ::Treetop::Runtime::SyntaxNode; end
+      class InsecurePassword < ::Treetop::Runtime::SyntaxNode; end
 
-      def users
-        config_block.elements.select { |e| e.class == UserLine }
+      class Section < ::Treetop::Runtime::SyntaxNode
+        include NamedSection
+        include ParameterContainer
+
+        def users
+          'single'
+          @users ||= userlist_block.elements.select { |e| e.class == UserLine }
+        end
+
+        def groups
+          @groups ||= userlist_block.elements.select { |e| e.class == GroupLine }
+        end
       end
 
-      def groups
-        config_block.elements.select { |e| e.class == GroupLine }
-      end
-    end
-
-    class UserLine < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-
-      def password
-        secure_password = elements.find { |e| e.class == Password }
-        insecure_password = elements.find { |e| e.class == InsecurePassword }
-        [secure_password, insecure_password].compact.first.content
+      class NameList < ::Treetop::Runtime::SyntaxNode
+        def values
+          userlist_name_list.text_value.split(",").map(&:strip).sort
+        end
       end
 
-      def group_names
-        list = elements.find { |e| e.class == GroupNames }
-        list ? list.name_list.values : []
+      class UserLine < ::Treetop::Runtime::SyntaxNode
+        include LineWithComment
+
+        def name
+          userlist_name.text_value
+        end
+
+        def password
+          secure_password = elements.find { |e| e.class == Password }
+          insecure_password = elements.find { |e| e.class == InsecurePassword }
+          [secure_password, insecure_password].compact.first.text_value
+        end
+
+        def groups
+          list = elements.find { |e| e.class == NameList }
+          list ? list.values : []
+        end
+
+        def inspect
+          "[UserLine] name: \"#{name}\", password: \"#{password}\", groups: \"#{groups.join(",")}\", comment: \"#{comment_text}\""
+        end
       end
-    end
 
-    class GroupLine < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
+      class GroupLine < ::Treetop::Runtime::SyntaxNode
+        include LineWithComment
 
-      def user_names
-        list = elements.find { |e| e.class == UserNames }
-        list ? list.name_list.values : []
+        def name
+          userlist_name.text_value
+        end
+
+        def users
+          list = elements.find { |e| e.class == NameList }
+          list ? list.values : []
+        end
+
+        def inspect
+          "[GroupLine] name: \"#{name}\", users: \"#{users.join(",")}\", comment: \"#{comment_text}\""
+        end
       end
-    end
-
-    class GroupNames < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-    end
-
-    class UserNames < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-    end
-
-    class NameList < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-
-      def values
-        content.split(",").map(&:strip).sort
-      end
-    end
-
-    class Name < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-    end
-
-    class Password < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
-    end
-
-    class InsecurePassword < ::Treetop::Runtime::SyntaxNode
-      include StrippedTextContent
     end
   end
 end

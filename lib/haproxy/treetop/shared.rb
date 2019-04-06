@@ -2,69 +2,90 @@
 
 module HAProxy
   module Treetop
-    # Include this module to always strip whitespace from the text_value
-    module StrippedTextContent
-      def content
-        text_value.strip
-      end
-    end
-
     module LineWithComment
       def comment_text
         node = elements.find { |e| e.class == CommentText }
-        node&.text_value
+        node && node.text_value
       end
     end
 
-    # class ProxyName < ::Treetop::Runtime::SyntaxNode
-    #   include StrippedTextContent
-    # end
+    module ParameterContainer
+      def parameters
+        @parameters ||= parameter_block.elements.select { |e| e.class == ParameterLine }
+      end
 
-    # Include this module if the node contains a config element.
-    module ConfigBlockContainer
-      # def option_lines
-      #   config_block.elements.select {|e| e.class == OptionLine}
-      # end
+      def size
+        parameters.size
+      end
 
-      # def config_lines
-      #   config_block.elements.select {|e| e.class == ConfigLine}
-      # end
-    end
+      def [](key)
+        params = parameters.select { |p| p.key == key }
+        return nil if params.empty?
 
-    # Include this module if the value is optional for the node.
-    module OptionalValueElement
-      def value
-        elements.find {|e| e.class == Value}
+        values = params.map { |p| p.value == "" ? nil : p.value }
+        return values.first if params.length == 1
+        values
       end
     end
 
-    # # Helper class for whitespace nodes
-    # class Whitespace < ::Treetop::Runtime::SyntaxNode
-    #   def content
-    #     text_value
-    #   end
-    # end
+    module OptionContainer
+      def options
+        @options ||= parameter_block.elements.select { |e| e.class == OptionLine }.each_with_object({}) do |l, hash|
+          hash[l.key] = l
+        end
+      end
+    end
 
-    # class LineBreak < ::Treetop::Runtime::SyntaxNode
-    # end
+    module ServerContainer
+      def servers
+        @servers ||= parameter_block.elements.select { |e| e.class == ServerLine }.each_with_object({}) do |l, hash|
+          hash[l.key] = l
+        end
+      end
+    end
 
-    # class Char < ::Treetop::Runtime::SyntaxNode
-    #   include StrippedTextContent
-    # end
+    module NamedSection
+      def name
+        header = elements.find { |e| e.class == NamedHeader }
+        section_name = header.elements.find { |e| e.class == SectionName }
+        section_name && section_name.text_value.strip
+      end
+    end
 
-    # class Keyword < ::Treetop::Runtime::SyntaxNode
-    #   include StrippedTextContent
-    # end
+    class NamedHeader < ::Treetop::Runtime::SyntaxNode
+      include LineWithComment
 
-    # class Value < ::Treetop::Runtime::SyntaxNode
-    #   include StrippedTextContent
-    # end
+      def render
+        text_value
+      end
+
+      def keyword
+        elements[1].text_value
+      end
+
+      def name
+        section_name = elements.find { |e| e.class == SectionName }
+        section_name && section_name.text_value.strip
+      end
+
+      def inspect
+        "[NamedHeader] keyword: \"#{keyword}\", name: \"#{name}\", comment: \"#{comment_text}\""
+      end
+    end
+
+    class SectionName < ::Treetop::Runtime::SyntaxNode
+      def inspect
+        "[SectionName] #{text_value}"
+      end
+    end
 
     class CommentText < ::Treetop::Runtime::SyntaxNode
       def inspect
         "[CommentText] #{text_value}"
       end
     end
+
+    class Negation < ::Treetop::Runtime::SyntaxNode; end
 
     class ParameterLine < ::Treetop::Runtime::SyntaxNode
       include LineWithComment
@@ -82,6 +103,23 @@ module HAProxy
       end
     end
 
+    class OptionLine < ParameterLine
+      def enabled?
+        elements.none? { |e| e.class == Negation }
+      end
+
+      def inspect
+        "[OptionLine] key: \"#{key}\", enabled: \"#{enabled?}\", value: \"#{value}\", comment: \"#{comment_text}\""
+      end
+    end
+
+    class ServerLine < ParameterLine
+      alias name key
+      def inspect
+        "[ServerLine] name: \"#{name}\", value: \"#{value}\", comment: \"#{comment_text}\""
+      end
+    end
+
     class CommentLine < ::Treetop::Runtime::SyntaxNode
       def inspect
         "[CommentLine] comment: \"#{comment_text.text_value}\""
@@ -93,24 +131,5 @@ module HAProxy
         "[BlankLine]"
       end
     end
-
-    # # Helper class for config nodes
-    # class ConfigLine < ::Treetop::Runtime::SyntaxNode
-    #   include StrippedTextContent
-    #   include OptionalValueElement
-
-    #   def key
-    #     keyword.content
-    #   end
-
-    #   def attribute
-    #     value.content
-    #   end
-    # end
-
-    # class OptionLine < ::Treetop::Runtime::SyntaxNode
-    #   include StrippedTextContent
-    #   include OptionalValueElement
-    # end
   end
 end

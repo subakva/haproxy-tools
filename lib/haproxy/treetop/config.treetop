@@ -28,7 +28,7 @@ module HAProxy::Treetop
     end
 
     rule global_header
-      whitespace "global" whitespace comment_text? line_break <GlobalHeader>
+      whitespace "global" whitespace comment_text? line_break <NamedHeader>
     end
 
     rule backend_section
@@ -60,11 +60,11 @@ module HAProxy::Treetop
     end
 
     rule defaults_header
-      whitespace "defaults" whitespace section_name whitespace comment_text? line_break <NamedHeader>
+      whitespace "defaults" whitespace section_name? whitespace comment_text? line_break <NamedHeader>
     end
 
     rule userlist_section
-      userlist_header userlist_block <UserlistSection>
+      userlist_header userlist_block <Userlist::Section>
     end
 
     rule userlist_header
@@ -103,40 +103,38 @@ module HAProxy::Treetop
       whitespace "mailers" whitespace section_name whitespace comment_text? line_break <NamedHeader>
     end
 
-    # rule proxy_header
-    #   whitespace header_keyword whitespace section_name? whitespace service_address? comment_text? line_break
-    # end
-
     rule section_name
-      [a-zA-Z0-9_\-\.:]+
+      [a-zA-Z0-9_\-\.:]+ <SectionName>
     end
 
-    # rule proxy_section
-    #   proxy_header parameter_block
-    # end
-
-#     rule listen_header
-#       whitespace "listen" whitespace proxy_name whitespace service_address? value? comment_text? line_break <ListenHeader>
-#     end
-
-    # rule defaults_header
-    #   whitespace "defaults" whitespace comment_text? line_break
-    # end
-
-    # rule defaults_section
-    #   defaults_header parameter_block <DefaultsSection>
-    # end
-
     rule parameter_block
-      (parameter_line / comment_line / blank_line)*
+      (
+        option_line /
+        server_line /
+        parameter_line /
+        comment_line /
+        blank_line
+      )*
     end
 
     rule header_keyword
-      "defaults" / "global" / "listen" / "frontend" / "backend" / "userlist"
+      "defaults" / "global" / "listen" / "frontend" / "backend" / "userlist" / "peers" / "mailers" / "cache" / "resolvers"
+    end
+
+    rule option_line
+      whitespace negation? whitespace "option" whitespace keyword whitespace parameter_value (comment_text / '') line_break <OptionLine>
+    end
+
+    rule server_line
+      whitespace "server" whitespace keyword whitespace parameter_value (comment_text / '') line_break <ServerLine>
     end
 
     rule parameter_line
       whitespace !header_keyword keyword whitespace parameter_value (comment_text / '') line_break <ParameterLine>
+    end
+
+    rule negation
+      "no" <Negation>
     end
 
     rule comment_line
@@ -147,39 +145,39 @@ module HAProxy::Treetop
       whitespace line_break <BlankLine>
     end
 
-    # userlist section -- user parameter line
     rule userlist_block
       (user_line / group_line / comment_line / blank_line)*
     end
 
+    # userlist section -- user parameter line
     rule user_line
-      whitespace "user" whitespace userlist_name whitespace (password / insecure_password) whitespace group_name_list? comment_text? line_break <UserLine>
+      whitespace "user" whitespace userlist_name whitespace (password / insecure_password) whitespace group_name_list? comment_text? line_break <Userlist::UserLine>
     end
 
     # userlist section -- group parameter line
     rule group_line
-      whitespace "group" whitespace userlist_name whitespace user_name_list? whitespace comment_text? line_break <GroupLine>
+      whitespace "group" whitespace userlist_name whitespace user_name_list? whitespace comment_text? line_break <Userlist::GroupLine>
     end
 
     rule password
-      "password" whitespace [^\s]+ <UserLine::Password>
+      "password" whitespace [^\s]+ <Userlist::Password>
     end
 
     rule insecure_password
-      "insecure-password" whitespace [^\s]+ <UserLine::InsecurePassword>
+      "insecure-password" whitespace [^\s]+ <Userlist::InsecurePassword>
     end
 
     rule group_name_list
-      whitespace "groups" whitespace userlist_name_list <UserlistSection::NameList>
+      whitespace "groups" whitespace userlist_name_list <Userlist::NameList>
     end
 
     rule user_name_list
-      whitespace "users" whitespace userlist_name_list <UserlistSection::NameList>
+      whitespace "users" whitespace userlist_name_list <Userlist::NameList>
     end
 
     rule userlist_name_list
-      # TODO: allow whitespace in here?
-      (userlist_name / ",")*
+      # (userlist_name / "," / whitespace)* # why doesn't this work?
+      [a-zA-Z0-9\-_ \t,]+
     end
 
     rule userlist_name
